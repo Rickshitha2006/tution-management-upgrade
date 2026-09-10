@@ -1,230 +1,757 @@
 # 🎓 Tuition Manager
 
-> **Update:** This app now supports account login and cross-device cloud
-> sync via a Cloudflare Worker + D1, on top of the exact same UI. See
-> [`DEPLOYMENT.md`](DEPLOYMENT.md) for what changed and how to deploy it.
-> Everything below describes the original local-only version; sections 3–4
-> and 15 (IndexedDB, no backend, local-only privacy) are superseded by
-> `DEPLOYMENT.md`.
+> **A simple, secure and cloud-synced tuition management PWA for managing students, attendance and fees from any device.**
 
-A free, offline, installable Progressive Web App (PWA) that replaces a tuition
-teacher's paper notebook. Manage students, daily attendance, fees, and
-generate simple parent-ready reports — all from a phone, with no internet
-connection required after the first load.
+Tuition Manager is a lightweight Progressive Web App (PWA) designed to replace a traditional tuition teacher's paper notebook with a simple digital system.
 
-Tuition Manager is **generic**: the first time it is opened, it asks for
-your tuition center's name and your name. It contains no hard-coded center,
-teacher, or student data, so anyone can install it and start using it
-immediately for their own tuition center.
+The application allows you to manage **students, daily attendance, attendance history, attendance marking times, fees, reports and backups** from a phone or computer.
+
+The latest version adds **account login, Cloudflare cloud storage and cross-device synchronization** while keeping the original application UI and user experience unchanged.
 
 ---
 
-## 1. What is Tuition Manager?
+## ✨ What's New
 
-It is a single-teacher, single-phone digital register. It is not a school
-management system with logins, batches, or multiple staff accounts — it is
-designed to be as simple as a physical notebook, just digital.
+The latest version upgrades the original local-only application with cloud functionality.
 
-## 2. Features
+### ☁️ Cloud Sync
 
-- First-time setup for your tuition center's name, staff name, contact and address
-- Add, edit, delete, search and view students
-- Daily attendance with a "Mark All Present" shortcut, and full attendance history with filters (today / week / month / custom / year)
-- Attendance percentage per student, automatically calculated
-- Fees: monthly fee tracking, payment recording (Cash / UPI / Bank Transfer / Other), pending/overpaid calculation
-- Student, Attendance, and Fees reports — printable / savable as PDF
-- Dashboard with quick actions and reminders (pending fees, incomplete attendance)
-- Global search across students, IDs, parent names and phone numbers
-- Backup to a JSON file and restore from a JSON file
-- CSV export for students, attendance and payments (opens in Excel/Sheets)
-- Demo data you can load and remove for testing
-- Clear-all-data option with strong confirmation
-- Installable on Android as a standalone app
-- Works fully offline after the first visit
-- 100% free — no subscription, no trial period, no ads, no artificial limits
+* Cloud-based student data
+* Cloud-based attendance records
+* Cloud-based fee records
+* Data synchronized across multiple devices
+* Same account can be used on different phones/computers
+* Data remains available after changing devices
 
-## 3. Technologies used
+### 🔐 Account Login
 
-- HTML5, CSS3, Bootstrap 5 (styling and modals)
-- Vanilla JavaScript (no frameworks, no build step)
-- IndexedDB for on-device storage
-- A Service Worker for offline caching (PWA)
+* Secure user account login
+* Passwords are securely handled
+* Each account has its own separate data
+* Users cannot access another user's records
 
-No backend, server, or cloud database is used anywhere in this project.
+### 🕐 Attendance Timestamp
 
-## 4. How IndexedDB works (in this app)
+Attendance now records the **exact time when a student is marked Present**.
 
-The browser has a small built-in database engine called IndexedDB.
-Tuition Manager creates one database, `TuitionManagerDB`, with four stores:
+Example:
 
-- `settings` — your tuition center's configuration (one record)
-- `students` — one record per student
-- `attendance` — one record per student per date
-- `payments` — one record per payment received
+```text
+Arun
+Present
+10 Sep 2026 • 5:42 PM
+```
 
-All of this lives inside your browser/phone's storage. Nothing is sent to
-any server. See `js/db.js` for the full implementation.
+This makes it easier to identify students who arrive early or late.
 
-## 5. How to run locally
+**Important:** Attendance timestamps are shown only inside the application's Attendance History. They are **not included in Excel/CSV exports**.
 
-You need a simple local web server (service workers and IndexedDB don't
-always behave correctly when opening `index.html` directly with
-`file://`). Any of these work:
+### 📱 Multi-Device Support
+
+The same account can be used on multiple devices.
+
+For example:
+
+```text
+Phone 1
+   ↓
+Login
+   ↓
+Add Student
+   ↓
+Mark Attendance
+   ↓
+Cloudflare D1
+   ↑
+   │
+Phone 2
+   ↑
+Login with same account
+   ↑
+Same data
+```
+
+Changes made on one device can be accessed from another device using the same account.
+
+---
+
+# 🎯 1. What is Tuition Manager?
+
+Tuition Manager is a simple digital register for tuition teachers.
+
+Instead of maintaining:
+
+* Student notebooks
+* Attendance notebooks
+* Fee notebooks
+* Separate backup files
+
+everything can be managed from one application.
+
+The application is designed to remain **simple and easy to use**, similar to maintaining a physical tuition register.
+
+---
+
+# 🚀 2. Features
+
+## 👨‍🎓 Student Management
+
+* Add students
+* Edit student details
+* Delete students
+* Search students
+* View student profiles
+* Parent information
+* Phone numbers
+* Monthly fee
+* Joining date
+* Notes
+* Student status
+
+---
+
+## 📝 Attendance Management
+
+* Daily attendance
+* Mark Present / Absent
+* Mark All Present
+* Edit attendance
+* Attendance history
+* Attendance percentage
+* Today / Week / Month / Custom / Year filters
+* Attendance records synchronized to the cloud
+
+### 🕐 Attendance Marking Time
+
+Whenever a student is marked **Present**, the application records the actual time.
+
+Example:
+
+```text
+10 Sep 2026
+Arun       Present     5:42 PM
+Rahul      Present     6:18 PM
+Priya      Present     5:35 PM
+```
+
+This makes it easy to identify late arrivals.
+
+The timestamp:
+
+* Is stored securely in the cloud
+* Appears in Attendance History
+* Synchronizes across devices
+* Is not included in Excel/CSV exports
+
+---
+
+# 💰 3. Fee Management
+
+Manage tuition fee payments from one place.
+
+Features include:
+
+* Monthly fee tracking
+* Record payments
+* Cash
+* UPI
+* Bank Transfer
+* Other payment methods
+* Paid / Pending status
+* Pending balance
+* Overpaid calculation
+* Payment history
+* Fee reports
+
+---
+
+# 📊 4. Reports
+
+Generate useful reports for tuition management.
+
+Available reports include:
+
+### Student Reports
+
+View individual student information and payment/attendance details.
+
+### Attendance Reports
+
+View attendance summaries with date and month/year filters.
+
+### Fee Reports
+
+View payment and pending-fee information.
+
+Reports can be printed or saved as PDF using the browser's print functionality.
+
+---
+
+# 🔎 5. Global Search
+
+Search across important student information including:
+
+* Student name
+* Student ID
+* Parent name
+* Phone number
+
+---
+
+# 💾 6. Backup & Restore
+
+The application includes data management tools inside Settings.
+
+### Backup
+
+Create a backup of your tuition data.
+
+### Restore
+
+Restore previously backed-up data when required.
+
+### Export Data
+
+Export tuition information in the existing supported format.
+
+### Load Data
+
+Import previously exported data.
+
+### Clear All Data
+
+Remove the current account's data after confirmation.
+
+### Demo Data
+
+Load demo records for testing.
+
+Demo data can also be removed when testing is complete.
+
+---
+
+# ☁️ 7. Cloud Architecture
+
+The latest version uses Cloudflare for the backend.
+
+```text
+                    ┌──────────────────┐
+                    │     User Device  │
+                    │   Phone/Desktop  │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │ Cloudflare Pages │
+                    │    Frontend      │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │ Cloudflare Worker│
+                    │   API + Auth     │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │  Cloudflare D1   │
+                    │   Cloud Database │
+                    └──────────────────┘
+```
+
+### Technologies
+
+* HTML5
+* CSS3
+* Bootstrap 5
+* Vanilla JavaScript
+* Cloudflare Pages
+* Cloudflare Workers
+* Cloudflare D1
+* Progressive Web App (PWA)
+
+---
+
+# 🔐 8. Data Security
+
+Each user account has its own data.
+
+The backend verifies authentication before allowing access to:
+
+* Students
+* Attendance
+* Attendance timestamps
+* Fees
+* Backups
+* Other account data
+
+User passwords are not stored as plain text.
+
+Cloudflare credentials and private secrets are not exposed in the frontend.
+
+---
+
+# 📱 9. Multi-Device Usage
+
+You can use the same account on multiple devices.
+
+### Example
+
+On Device 1:
+
+```text
+Login
+↓
+Add Arun
+↓
+Monthly Fee: ₹500
+↓
+Mark Present
+↓
+Attendance Time: 5:42 PM
+```
+
+On Device 2:
+
+```text
+Login with same account
+↓
+Arun appears
+↓
+₹500 fee appears
+↓
+Present appears
+↓
+5:42 PM appears in Attendance History
+```
+
+If attendance or fee information is changed on one device, the updated cloud data can be accessed from the other device.
+
+---
+
+# 📤 10. Excel / CSV Export
+
+The application supports data export for use with:
+
+* Microsoft Excel
+* Google Sheets
+* Other spreadsheet applications
+
+### Important
+
+Attendance marking timestamps are **not exported**.
+
+For example, the application may display:
+
+```text
+Arun | Present | 5:42 PM
+```
+
+inside Attendance History.
+
+But the exported data remains:
+
+```text
+Date | Student | Attendance
+10 Sep 2026 | Arun | Present
+```
+
+There is no timestamp column.
+
+This keeps the existing export format clean and compatible.
+
+---
+
+# 📲 11. Progressive Web App
+
+Tuition Manager is an installable PWA.
+
+It can be installed on supported mobile and desktop devices.
+
+After installation, it can appear like a normal application on the device.
+
+### Android
+
+1. Open the live application in Chrome.
+2. Open the browser menu.
+3. Select **Install App** or **Add to Home Screen**.
+4. Confirm installation.
+5. Launch Tuition Manager from the home screen.
+
+---
+
+# 🌐 12. Deployment
+
+The project source code is maintained on GitHub.
+
+The recommended production architecture is:
+
+```text
+GitHub
+   ↓
+Cloudflare Pages
+   ↓
+Cloudflare Worker
+   ↓
+Cloudflare D1
+```
+
+GitHub is used for source-code management and version control.
+
+Cloudflare provides the application hosting and cloud backend.
+
+---
+
+# 🛠️ 13. Local Development
+
+Clone the repository:
 
 ```bash
-# Option A: Python (already installed on most systems)
-cd tuition-manager
-python3 -m http.server 8000
-# then open http://localhost:8000 in your browser
-
-# Option B: Node.js
-npx serve tuition-manager
+git clone https://github.com/Rickshitha2006/tution-management-upgrade.git
 ```
 
-## 6. How to deploy to GitHub Pages
+Enter the project:
 
-1. Create a free GitHub account if you don't have one.
-2. Create a new repository, e.g. named `tuition-manager`.
-3. Upload all the files in this project (keeping the folder structure) to
-   that repository.
-4. Go to **Repository → Settings → Pages**.
-5. Under "Build and deployment", select **Deploy from a branch**.
-6. Select branch **main** and folder **/ (root)**.
-7. Click **Save**.
-8. Wait a minute or two for GitHub to deploy the site.
-
-Your app will be available at:
-
-```
-https://YOUR-USERNAME.github.io/tuition-manager/
+```bash
+cd tution-management-upgrade
 ```
 
-(Replace `YOUR-USERNAME` with your actual GitHub username.) All file paths
-in this project are relative, so it works correctly even though GitHub
-Pages hosts your project in a sub-folder rather than at the root domain.
+For the frontend, a simple local web server can be used.
 
-## 7. How to install as a PWA on Android
+### Python
 
-1. Open your GitHub Pages URL in Chrome on your Android phone.
-2. Wait for the page to fully load.
-3. Tap the Chrome menu (⋮) in the top-right corner.
-4. Tap **"Install app"** or **"Add to Home screen"** (the exact wording
-   depends on your Android/Chrome version).
-5. Confirm the install.
-6. Open **Tuition Manager** from your phone's home screen — it will now
-   behave like a normal app, with its own icon and no browser address bar.
+```bash
+python -m http.server 8000
+```
 
-## 8. How to add students
+Then open:
 
-Go to **Students → + Add Student**, fill in the student's name (required)
-and any optional details (parent name/phone, monthly fee, joining date,
-notes), then tap **Save Student**.
+```text
+http://localhost:8000
+```
 
-## 9. How to mark attendance
-
-Go to **Attendance**. Today's date is selected automatically. Tap
-**Mark All Present**, then tap **Absent** for any students who are not
-present, and tap **Save Attendance**. You can change the date to mark or
-edit attendance for a different day at any time.
-
-## 10. How to record fees
-
-Go to **Fees → + Add Payment**, choose the student, enter the amount, date
-and payment mode, then tap **Save Payment**. The student's pending balance
-updates immediately.
-
-## 11. How to generate reports
-
-Go to **Reports**. Choose the **Student** tab for an individual,
-parent-ready report, or the **Attendance** / **Fees** tabs for
-center-wide summaries with month/year filters. Use **Print Report** to
-print it or save it as a PDF using your browser's built-in "Save as PDF"
-option in the print dialog.
-
-## 12. How backup works
-
-Go to **Settings → Backup All Data**. This downloads a JSON file named
-`tuition-manager-backup-YYYY-MM-DD.json` containing all your settings,
-students, attendance and payment records.
-
-## 13. How restore works
-
-Go to **Settings → Restore from Backup**, and select a previously saved
-backup JSON file. You'll be asked to confirm, since restoring **replaces**
-all current data on the device. The app validates the file before
-importing it and shows an error if it is not a valid Tuition Manager
-backup.
-
-## 14. How to move data to a new phone
-
-- **Old phone:** Settings → Backup All Data
-- **New phone:** Install Tuition Manager → Settings → Restore from Backup
-  → select the backup file
-
-## 15. Privacy & limitations
-
-This is a **local-only** application. Student, attendance and fee data is
-stored only in the browser storage of the specific device/browser you are
-using — it is never uploaded anywhere. GitHub Pages only hosts the
-application's code (the HTML/CSS/JS files); it does not store or see your
-data.
-
-Because of this:
-
-- If you use the app on two different phones, they will **not**
-  automatically share data. Use Backup/Restore to move data between
-  devices.
-- If you reset your phone or clear your browser's site data without
-  backing up first, your data will be lost. Please take regular backups
-  (Settings → Backup All Data).
-- Building a shared, always-in-sync, multi-device version would require a
-  backend/cloud database, which is intentionally **not** part of this
-  project so it can remain free and simple.
-
-## 16. Offline functionality
-
-After your first successful visit, a service worker caches the app's
-files. From then on, you can add students, mark attendance, record
-payments, search, view reports, and back up/restore data — all without an
-internet connection, because your data lives in IndexedDB on your device.
-
-## 17. GitHub Pages limitations
-
-GitHub Pages is a static file host — it serves your HTML/CSS/JS files
-exactly as uploaded. It cannot run a backend, so all logic in this app
-runs entirely in the browser. This is by design.
+For Cloudflare Worker development, use the Cloudflare development tools/configuration included in the project.
 
 ---
 
-## Project structure
+# 📁 14. Project Structure
 
-```
-tuition-manager/
-├── index.html          Dashboard + first-time setup
-├── students.html        Student list, add/edit, profile
-├── attendance.html      Mark attendance + history
-├── fees.html             Fee summaries + payments
-├── reports.html          Student / Attendance / Fees reports
-├── settings.html         Center info, backup/restore, demo data
-├── css/style.css
+The project structure may vary slightly as the cloud backend is integrated, but the main architecture is:
+
+```text
+tution-management-upgrade/
+│
+├── index.html
+├── students.html
+├── attendance.html
+├── fees.html
+├── reports.html
+├── settings.html
+│
+├── css/
+│   └── style.css
+│
 ├── js/
-│   ├── app.js            App shell: nav, header, setup, dashboard
-│   ├── db.js              IndexedDB wrapper (all data access)
-│   ├── utils.js           Formatting, date & fee-calculation helpers
+│   ├── app.js
+│   ├── db.js
+│   ├── utils.js
 │   ├── students.js
 │   ├── attendance.js
 │   ├── fees.js
 │   ├── reports.js
-│   ├── backup.js          Backup / restore / demo data / clear data
+│   ├── backup.js
 │   └── settings.js
+│
+├── worker/
+│   ├── src/
+│   │   └── ...
+│   ├── migrations/
+│   │   └── ...
+│   └── wrangler.toml
+│
 ├── icons/
 │   ├── icon-192.png
 │   └── icon-512.png
+│
 ├── manifest.json
 ├── service-worker.js
+├── DEPLOYMENT.md
 └── README.md
 ```
 
-## License
+The exact structure should follow the current implementation.
 
-Free to use, modify and share for any tuition center.
+---
+
+# 🔄 15. Original Local Storage
+
+The original version of Tuition Manager used browser-based IndexedDB storage.
+
+The upgraded version introduces cloud storage through Cloudflare D1.
+
+Existing local data should be migrated safely when moving to the cloud version.
+
+The application should never silently delete existing tuition records during migration.
+
+---
+
+# ⚙️ 16. Settings
+
+The existing Settings functionality is preserved.
+
+Settings includes functionality such as:
+
+* Center information
+* Staff information
+* Backup
+* Restore
+* Export Data
+* Load Data
+* Clear All Data
+* Load Demo Data
+* Remove Demo Data
+
+These features continue to operate for the currently authenticated account.
+
+**Clear All Data only affects the logged-in user's data.**
+
+---
+
+# 🎨 17. UI & Design
+
+The application's original interface is intentionally preserved.
+
+The upgrade does **not** replace the original design with a new dashboard.
+
+The following remain consistent:
+
+* Green and white theme
+* Navigation
+* Cards
+* Buttons
+* Forms
+* Icons
+* Typography
+* Spacing
+* Attendance interface
+* Fee interface
+* Student interface
+* Settings interface
+* Mobile responsiveness
+* Desktop responsiveness
+
+The main additions are:
+
+* Account login
+* Cloud synchronization
+* Multi-device access
+* Attendance marking timestamp
+
+---
+
+# 📡 18. Internet & Cloud Sync
+
+The original application was designed around local/offline storage.
+
+The upgraded version uses cloud synchronization for shared multi-device data.
+
+An internet connection is required when communicating with the cloud backend.
+
+The application should never falsely indicate that a cloud change has synchronized when the device is offline.
+
+---
+
+# 🧪 19. Testing
+
+Important functionality to test before daily use:
+
+### Authentication
+
+* Registration
+* Login
+* Logout
+* Invalid login
+* Session handling
+
+### Students
+
+* Add
+* Edit
+* Delete
+* Search
+* Sort
+* Filter
+
+### Attendance
+
+* Present
+* Absent
+* Mark All Present
+* Attendance history
+* Date filters
+* Attendance percentage
+* Attendance timestamp
+
+### Fees
+
+* Add payment
+* Paid
+* Pending
+* Payment history
+* Fee calculations
+
+### Settings
+
+* Export
+* Load
+* Restore
+* Clear All Data
+* Load Demo Data
+* Remove Demo Data
+
+### Multi-device
+
+* Login on Device 1
+* Add student
+* Mark attendance
+* Verify timestamp
+* Login on Device 2
+* Verify the same student/data
+* Modify data on Device 2
+* Verify the update on Device 1
+
+---
+
+# 💡 20. Example Daily Workflow
+
+A typical tuition session can be managed like this:
+
+### Before Class
+
+Open Tuition Manager.
+
+```text
+Dashboard
+↓
+Attendance
+↓
+Mark All Present
+```
+
+### During Class
+
+Mark students who are absent.
+
+The application records the time when each Present attendance is marked.
+
+Example:
+
+```text
+Arun       Present     5:35 PM
+Rahul      Present     5:48 PM
+Priya      Present     6:12 PM
+Kavin      Absent
+```
+
+This makes late arrivals easy to identify from Attendance History.
+
+### Fee Collection
+
+```text
+Fees
+↓
+Add Payment
+↓
+Select Student
+↓
+Enter Amount
+↓
+Select Payment Mode
+↓
+Save
+```
+
+### End of Month
+
+Use:
+
+```text
+Reports
+↓
+Attendance / Fees
+```
+
+and export or print the required information.
+
+---
+
+# 🆓 21. Cost
+
+The project is designed to operate using free-tier services and does not require:
+
+* Paid hosting
+* Paid database
+* Monthly subscription
+* MongoDB
+* Render
+* Supabase
+* Firebase
+
+Actual free-tier limits and provider policies can change over time, so production usage should remain within the applicable Cloudflare limits.
+
+---
+
+# 🔮 22. Future Improvements
+
+Possible future features include:
+
+* Parent notifications
+* WhatsApp-ready payment reminders
+* More detailed late-arrival reports
+* Monthly attendance summaries
+* Fee reminders
+* Additional reporting
+* Custom domain
+* Additional staff accounts
+
+These can be added without changing the core purpose of the application.
+
+---
+
+# 👩‍💻 23. Project Purpose
+
+Tuition Manager was created to solve a simple real-world problem:
+
+> **Replacing paper-based tuition records with an easy-to-use digital system.**
+
+Instead of maintaining separate notebooks for:
+
+* Students
+* Attendance
+* Fees
+* Payments
+* Reports
+
+Tuition Manager brings these everyday tasks into one simple application.
+
+The cloud upgrade extends this idea by allowing the same account and data to be used across multiple devices.
+
+---
+
+# 📌 24. Repository
+
+GitHub Repository:
+
+https://github.com/Rickshitha2006/tution-management-upgrade
+
+---
+
+# 📄 License
+
+Free to use, modify and share for tuition management purposes.
+
+---
+
+## ⭐ Tuition Manager
+
+**Simple. Digital. Cloud-synced. Built for everyday tuition management.**
