@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tuition Manager</title>
+<meta name="theme-color" content="#1E3A5F">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ======================= FIRST-TIME SETUP SCREEN ======================= -->
+<div id="tmSetupScreen" class="tm-setup-wrap d-none">
+  <div class="tm-setup-card">
+    <div class="text-center mb-3">
+      <span class="tm-setup-emoji">🎓</span>
+      <h1 class="h4 mt-2 mb-1">Welcome to Tuition Manager 🎓</h1>
+      <p class="tm-muted mb-0">Let's set up your tuition center. This only takes a minute.</p>
+    </div>
+    <form id="tmSetupForm" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="setupCenterName">Tuition Center Name</label>
+        <input type="text" class="form-control" id="setupCenterName" placeholder="Enter your tuition center name" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="setupStaffName">Staff / Teacher Name</label>
+        <input type="text" class="form-control" id="setupStaffName" placeholder="Enter your name" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="setupContact">Contact Number <span class="tm-muted fw-normal">(optional)</span></label>
+        <input type="tel" class="form-control" id="setupContact" placeholder="Enter contact number">
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="setupAddress">Address <span class="tm-muted fw-normal">(optional)</span></label>
+        <textarea class="form-control" id="setupAddress" rows="2" placeholder="Enter address"></textarea>
+      </div>
+      <button type="submit" class="btn btn-tm-primary btn-lg-tap w-100">Continue</button>
+    </form>
+    <p class="tm-muted text-center mt-3 mb-0" style="font-size:0.8rem;">
+      Your data syncs securely to your account — log in with the same email and password on another device to see it there too.
+    </p>
+  </div>
+</div>
+
+<!-- ======================= DASHBOARD ======================= -->
+<div id="tmDashboardScreen" class="d-none">
+  <header class="tm-topbar">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <p class="center-name" id="tmCenterName">Tuition Manager</p>
+        <p class="staff-name" id="tmStaffName"></p>
+      </div>
+      <a href="settings.html" class="text-white fs-4" title="Settings" aria-label="Settings">⚙️</a>
+    </div>
+  </header>
+
+  <main class="tm-container">
+
+    <div class="tm-search-box mb-3">
+      <a href="students.html?focusSearch=1" class="d-block">
+        <input type="text" class="form-control" placeholder="Search student by name, ID or parent phone…" readonly style="cursor:pointer;">
+        <span class="search-icon">🔎</span>
+      </a>
+    </div>
+
+    <div class="tm-stat-grid mb-3">
+      <div class="tm-stat-tile">
+        <div class="value" id="statTotalStudents">0</div>
+        <div class="label">Total Students</div>
+      </div>
+      <div class="tm-stat-tile">
+        <div class="value" id="statTodayPresent">0</div>
+        <div class="label">Today's Present</div>
+      </div>
+      <div class="tm-stat-tile">
+        <div class="value" id="statTodayAbsent">0</div>
+        <div class="label">Today's Absent</div>
+      </div>
+      <div class="tm-stat-tile">
+        <div class="value" id="statFeesCollected">₹0</div>
+        <div class="label">Fees Collected</div>
+      </div>
+    </div>
+    <div class="tm-section-title"><span>Quick Actions</span><span class="rule"></span></div>
+    <div class="tm-quick-actions mb-2">
+      <a href="students.html?add=1" class="btn btn-tm-primary">+ Add Student</a>
+      <a href="attendance.html" class="btn btn-tm-outline">📅 Attendance</a>
+      <a href="fees.html?add=1" class="btn btn-tm-outline">💰 Add Payment</a>
+      <a href="students.html?focusSearch=1" class="btn btn-tm-outline">🔎 Search Student</a>
+    </div>
+
+    <div class="tm-section-title"><span>Reminders</span><span class="rule"></span></div>
+    <div id="tmReminders"></div>
+
+    <div class="tm-section-title"><span>Recent Payments</span><span class="rule"></span></div>
+    <div id="tmRecentPaymentsList"></div>
+
+    <div class="tm-section-title"><span>Today's Attendance Status</span><span class="rule"></span></div>
+    <div id="tmTodayAttendanceList"></div>
+
+  </main>
+
+  <nav class="tm-bottom-nav" id="tmBottomNav"></nav>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/app.js"></script>
+<script>
+  tmRegisterServiceWorker();
+  document.addEventListener("DOMContentLoaded", () => {
+    tmInitDashboard();
+  });
+</script>
+</body>
+</html>

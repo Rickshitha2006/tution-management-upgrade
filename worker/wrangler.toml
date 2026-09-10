@@ -1,0 +1,16 @@
+name = "tuition-manager-api"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# Free tier: Workers + D1 both have generous free monthly limits, no
+# credit card required for the tier this project needs.
+
+[[d1_databases]]
+binding = "DB"                       # accessed in code as env.DB
+database_name = "tuition-manager-db"
+database_id = "b607d3a8-3975-426b-b522-2a6aae485eb6"   # `wrangler d1 create tuition-manager-db` prints this
+
+# No secrets are needed for this project (passwords are hashed with
+# Web Crypto/PBKDF2, sessions are random tokens stored in D1 — nothing
+# to put in `wrangler secret put`). If you add one later, never commit
+# it here; use `wrangler secret put NAME` instead.

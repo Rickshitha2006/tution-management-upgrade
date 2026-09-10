@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Students — Tuition Manager</title>
+<meta name="theme-color" content="#1E3A5F">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="tm-topbar">
+  <div class="d-flex align-items-center">
+    <a href="index.html" class="tm-back">←</a>
+    <p class="page-title">Students</p>
+  </div>
+</header>
+
+<main class="tm-container">
+
+  <div class="tm-search-box mb-2">
+    <input type="text" id="studentSearchInput" class="form-control" placeholder="Search by name, ID, or parent phone…">
+    <span class="search-icon">🔎</span>
+  </div>
+
+  <div class="d-flex gap-2 mb-3 tm-controls-row">
+    <select id="studentFilterSelect" class="form-select">
+      <option value="active" selected>Active students</option>
+      <option value="inactive">Inactive students</option>
+      <option value="all">All students</option>
+    </select>
+    <select id="studentSortSelect" class="form-select">
+      <option value="name" selected>Sort: Name</option>
+      <option value="paid">Sort: Total paid</option>
+      <option value="attendance">Sort: Attendance %</option>
+    </select>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-2 tm-action-row">
+    <button id="btnAddStudent" class="btn btn-tm-primary btn-lg-tap">+ Add Student</button>
+    <button id="btnExportStudentsCsv" class="btn btn-tm-outline">Export CSV</button>
+  </div>
+
+  <div id="studentListContainer"></div>
+
+</main>
+
+<!-- Add / Edit Student Modal -->
+<div class="modal fade" id="studentModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="studentModalTitle">Add Student</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="studentForm">
+        <div class="modal-body">
+          <input type="hidden" id="studentFormId">
+          <div class="mb-3">
+            <label class="form-label">Student Name *</label>
+            <input type="text" class="form-control" id="studentName" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Student ID (optional)</label>
+            <input type="text" class="form-control" id="studentIdField">
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label">Parent Name</label>
+              <input type="text" class="form-control" id="studentParentName">
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label">Parent Phone</label>
+              <input type="tel" class="form-control" id="studentParentPhone">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Student Phone (optional)</label>
+            <input type="tel" class="form-control" id="studentPhone">
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label">Joining Date</label>
+              <input type="date" class="form-control" id="studentJoiningDate">
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label">Monthly Fee (₹)</label>
+              <input type="number" min="0" step="0.01" class="form-control" id="studentMonthlyFee">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" id="studentNotes" rows="2"></textarea>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="studentActive" checked>
+            <label class="form-check-label" for="studentActive">Active student</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="btnDeleteStudent" class="btn btn-tm-danger me-auto d-none">Delete</button>
+          <button type="button" class="btn btn-tm-outline" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-tm-primary">Save Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Student Profile Modal -->
+<div class="modal fade" id="profileModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Student Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="profileModalBody"></div>
+      <div class="modal-footer flex-wrap">
+        <button type="button" id="btnProfileEdit" class="btn btn-tm-outline">Edit Student</button>
+        <button type="button" id="btnProfileAttendance" class="btn btn-tm-outline">Mark Attendance</button>
+        <button type="button" id="btnProfilePayment" class="btn btn-tm-primary">Add Payment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="tm-bottom-nav" id="tmBottomNav"></nav>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/app.js"></script>
+<script src="js/students.js"></script>
+<script>
+  tmRegisterServiceWorker();
+  document.addEventListener("DOMContentLoaded", () => {
+    tmInitStudentsPage();
+  });
+</script>
+</body>
+</html>

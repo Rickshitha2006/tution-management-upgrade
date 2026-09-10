@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Wrangler local dev state (local D1 SQLite files, cached auth, etc.)
+worker/.wrangler/
+worker/.dev.vars
+.wrangler/
+
+# Never commit secrets of any kind
+*.env
+.env
+.env.*
+*.pem
+*.key
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/

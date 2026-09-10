@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Log In — Tuition Manager</title>
+<meta name="theme-color" content="#1E3A5F">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Reuses the exact same first-time-setup screen styling (tm-setup-wrap /
+     tm-setup-card) already used on index.html — no new visual design. -->
+<div class="tm-setup-wrap">
+  <div class="tm-setup-card">
+    <div class="text-center mb-3">
+      <span class="tm-setup-emoji">🎓</span>
+      <h1 class="h4 mt-2 mb-1" id="authTitle">Welcome back 🎓</h1>
+      <p class="tm-muted mb-0" id="authSubtitle">Log in to sync your students, attendance and fees across devices.</p>
+    </div>
+
+    <form id="authForm" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="authEmail">Email</label>
+        <input type="email" class="form-control" id="authEmail" placeholder="you@example.com" required autocomplete="username">
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="authPassword">Password</label>
+        <input type="password" class="form-control" id="authPassword" placeholder="Enter your password" required minlength="6" autocomplete="current-password">
+      </div>
+      <div class="mb-4 d-none" id="authConfirmWrap">
+        <label class="form-label" for="authPasswordConfirm">Confirm Password</label>
+        <input type="password" class="form-control" id="authPasswordConfirm" placeholder="Re-enter your password" minlength="6" autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn btn-tm-primary btn-lg-tap w-100" id="authSubmitBtn">Log In</button>
+    </form>
+
+    <p class="text-center mt-3 mb-0" style="font-size:0.9rem;">
+      <span id="authToggleText">Don't have an account?</span>
+      <a href="#" id="authToggleLink">Create one</a>
+    </p>
+
+    <p class="tm-muted text-center mt-3 mb-0" style="font-size:0.8rem;">
+      Your data is stored securely in the cloud and is only ever visible to your account.
+    </p>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/utils.js"></script>
+<script>
+  function tmBasePath() {
+    const path = window.location.pathname;
+    return path.substring(0, path.lastIndexOf("/") + 1);
+  }
+
+  let tmAuthMode = "login"; // "login" | "register"
+
+  function tmApplyAuthMode() {
+    const isRegister = tmAuthMode === "register";
+    document.getElementById("authTitle").textContent = isRegister ? "Create your account 🎓" : "Welcome back 🎓";
+    document.getElementById("authSubtitle").textContent = isRegister
+      ? "One account, synced across every device you use."
+      : "Log in to sync your students, attendance and fees across devices.";
+    document.getElementById("authConfirmWrap").classList.toggle("d-none", !isRegister);
+    document.getElementById("authPasswordConfirm").required = isRegister;
+    document.getElementById("authSubmitBtn").textContent = isRegister ? "Create Account" : "Log In";
+    document.getElementById("authToggleText").textContent = isRegister ? "Already have an account?" : "Don't have an account?";
+    document.getElementById("authToggleLink").textContent = isRegister ? "Log in" : "Create one";
+  }
+
+  document.getElementById("authToggleLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    tmAuthMode = tmAuthMode === "login" ? "register" : "login";
+    tmApplyAuthMode();
+  });
+
+  function tmNextPage() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("next") || "index.html";
+  }
+
+  document.getElementById("authForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("authEmail").value.trim();
+    const password = document.getElementById("authPassword").value;
+    const submitBtn = document.getElementById("authSubmitBtn");
+
+    if (tmAuthMode === "register") {
+      const confirmPw = document.getElementById("authPasswordConfirm").value;
+      if (password !== confirmPw) {
+        tmToast("Passwords do not match.");
+        return;
+      }
+    }
+
+    submitBtn.disabled = true;
+    const originalLabel = submitBtn.textContent;
+    submitBtn.textContent = "Please wait…";
+
+    try {
+      if (tmAuthMode === "register") {
+        await TMAuth.register(email, password);
+      } else {
+        await TMAuth.login(email, password);
+      }
+      if (typeof tmCheckAndOfferMigration === "function") {
+        await tmCheckAndOfferMigration();
+      }
+      window.location.href = tmBasePath() + tmNextPage();
+    } catch (err) {
+      tmToast(err.message || "Something went wrong. Please try again.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
+    }
+  });
+
+  // Already logged in? Skip straight through.
+  if (TMAuth.isLoggedIn()) {
+    window.location.href = tmBasePath() + tmNextPage();
+  }
+</script>
+<script src="js/legacy-local-db.js"></script>
+<script src="js/migrate.js"></script>
+</body>
+</html>

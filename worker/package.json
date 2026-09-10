@@ -1,0 +1,13 @@
+{
+  "name": "tuition-manager-api",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply tuition-manager-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply tuition-manager-db --remote"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}

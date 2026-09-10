@@ -1,0 +1,671 @@
+/* ==========================================================================
+   Tuition Manager — Design tokens
+   Theme: a digital register/ledger. Navy ink, amber highlighter,
+   warm paper background, index-card lists.
+   ========================================================================== */
+
+:root {
+  --color-ink: #1E3A5F;        /* primary navy */
+  --color-ink-dark: #14283F;
+  --color-ink-light: #345680;
+  --color-amber: #F0A202;      /* highlighter accent */
+  --color-amber-dark: #C9820A;
+  --color-paper: #F5F3ED;      /* page background */
+  --color-card: #FFFFFF;
+  --color-text: #1B1F27;
+  --color-text-muted: #5B6270;
+  --color-border: #E4E0D6;
+  --color-success: #2E7D45;
+  --color-success-bg: #E7F3EA;
+  --color-danger: #C1443C;
+  --color-danger-bg: #FBEAE8;
+  --color-warning: #B4780F;
+  --color-warning-bg: #FBF1DD;
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-card: 0 1px 2px rgba(20, 40, 63, 0.06), 0 4px 14px rgba(20, 40, 63, 0.06);
+  --nav-height: 64px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  padding-bottom: calc(var(--nav-height) + 16px);
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, .display-font {
+  font-family: var(--font-display);
+  color: var(--color-ink-dark);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+a { text-decoration: none; }
+
+/* ---- Top bar (ledger tab) ---- */
+.tm-topbar {
+  background: var(--color-ink);
+  color: #fff;
+  padding: 14px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  box-shadow: 0 2px 10px rgba(20, 40, 63, 0.18);
+}
+.tm-topbar .center-name {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+  color: #fff;
+}
+.tm-topbar .staff-name {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.72);
+  margin: 0;
+}
+.tm-topbar .tm-back {
+  color: #fff;
+  font-size: 1.3rem;
+  margin-right: 10px;
+}
+.tm-topbar .page-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+/* amber rule under topbar, like a ledger underline */
+.tm-topbar::after {
+  content: "";
+  display: block;
+  height: 3px;
+  background: var(--color-amber);
+  margin-top: 12px;
+  border-radius: 3px;
+}
+
+.tm-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+  width: 100%;
+}
+
+/* ---- Cards ---- */
+.tm-card {
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+  margin-bottom: 14px;
+  border: 1px solid var(--color-border);
+}
+
+/* index-card style for list rows: amber spine on the left, like a
+   ledger card sticking out of a box */
+.tm-index-card {
+  background: var(--color-card);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  border-left: 5px solid var(--color-amber);
+  padding: 14px 14px 14px 16px;
+  margin-bottom: 10px;
+  display: block;
+  color: inherit;
+  min-width: 0;       /* let this shrink inside a grid track instead of overflowing */
+  overflow-wrap: anywhere;
+}
+.tm-index-card.inactive {
+  border-left-color: var(--color-text-muted);
+  opacity: 0.65;
+}
+.tm-index-card .name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--color-ink-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+.tm-index-card .meta {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+.tm-index-card .stat-row {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.tm-index-card .stat-row > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ---- Stat pills / dashboard tiles ---- */
+.tm-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.tm-stat-tile {
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  padding: 14px;
+  text-align: left;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tm-stat-tile .value {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  line-height: 1.1;
+}
+.tm-stat-tile .label {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+/* ---- Badges ---- */
+.tm-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.tm-badge.success { background: var(--color-success-bg); color: var(--color-success); }
+.tm-badge.danger { background: var(--color-danger-bg); color: var(--color-danger); }
+.tm-badge.warning { background: var(--color-warning-bg); color: var(--color-warning); }
+.tm-badge.neutral { background: #EDEBE3; color: var(--color-text-muted); }
+
+/* ---- Buttons ---- */
+.btn-tm-primary {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: #fff;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+}
+.btn-tm-primary:hover, .btn-tm-primary:focus {
+  background: var(--color-ink-dark);
+  border-color: var(--color-ink-dark);
+  color: #fff;
+}
+.btn-tm-amber {
+  background: var(--color-amber);
+  border-color: var(--color-amber);
+  color: var(--color-ink-dark);
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+}
+.btn-tm-amber:hover, .btn-tm-amber:focus {
+  background: var(--color-amber-dark);
+  border-color: var(--color-amber-dark);
+  color: var(--color-ink-dark);
+}
+.btn-tm-outline {
+  background: transparent;
+  border: 1.5px solid var(--color-ink);
+  color: var(--color-ink);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+.btn-tm-outline:hover { background: var(--color-ink); color: #fff; }
+.btn-tm-danger {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: #fff;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+.btn-lg-tap {
+  min-height: 48px;
+  font-size: 1rem;
+}
+
+/* Quick action grid on dashboard */
+.tm-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.tm-quick-actions button, .tm-quick-actions a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+
+/* ---- Bottom navigation ---- */
+.tm-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  background: #fff;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  z-index: 40;
+  box-shadow: 0 -2px 10px rgba(20,40,63,0.06);
+}
+.tm-bottom-nav a {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+.tm-bottom-nav a .icon { font-size: 1.25rem; line-height: 1; }
+.tm-bottom-nav a.active { color: var(--color-ink); }
+.tm-bottom-nav a.active .icon { color: var(--color-amber-dark); }
+
+/* ---- Forms ---- */
+.form-label { font-weight: 600; color: var(--color-ink-dark); font-size: 0.9rem; }
+.form-control, .form-select {
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-border);
+  padding: 10px 12px;
+  /* 16px min prevents iOS Safari from auto-zooming the page when a
+     text field is focused on a phone. */
+  font-size: max(0.95rem, 16px);
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--color-ink);
+  box-shadow: 0 0 0 3px rgba(30,58,95,0.12);
+}
+
+/* A row of side-by-side filter/sort dropdowns — let them shrink
+   instead of overflowing the viewport, and wrap onto a second line on
+   very narrow phones rather than squeezing text unreadably small. */
+.tm-controls-row {
+  flex-wrap: wrap;
+}
+.tm-controls-row > select,
+.tm-controls-row > input,
+.tm-controls-row > .form-select,
+.tm-controls-row > .form-control {
+  min-width: 0;
+  flex: 1 1 140px;
+}
+
+/* A row of two action buttons (Add / Export, etc.) — wrap onto two
+   lines on very narrow phones instead of squeezing or overflowing. */
+.tm-action-row {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tm-action-row > .btn {
+  flex: 0 1 auto;
+}
+@media (max-width: 380px) {
+  .tm-action-row > .btn { flex: 1 1 100%; }
+}
+
+/* ---- Search box ---- */
+.tm-search-box {
+  position: relative;
+}
+.tm-search-box input {
+  padding-left: 40px;
+  border-radius: 30px;
+}
+.tm-search-box .search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+}
+
+/* ---- Section headers ---- */
+.tm-section-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-ink-dark);
+  margin: 20px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tm-section-title .rule {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* ---- Empty states ---- */
+.tm-empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--color-text-muted);
+}
+.tm-empty .emoji { font-size: 2.4rem; display: block; margin-bottom: 8px; }
+
+/* ---- Attendance row ---- */
+.tm-attend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+.tm-attend-row .student-name { font-weight: 600; color: var(--color-ink-dark); }
+.tm-attend-toggle { display: flex; gap: 6px; }
+.tm-attend-toggle button {
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 1.5px solid var(--color-border);
+  background: #fff;
+  color: var(--color-text-muted);
+}
+.tm-attend-toggle button.present.selected {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+.tm-attend-toggle button.absent.selected {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+/* ---- Table (monthly fee tracking) ---- */
+.tm-month-table { width: 100%; border-collapse: collapse; }
+.tm-month-table th, .tm-month-table td {
+  padding: 8px 6px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.88rem;
+}
+.tm-month-table th { color: var(--color-text-muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; }
+
+/* ---- Setup screen ---- */
+.tm-setup-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: linear-gradient(180deg, var(--color-ink) 0%, var(--color-ink) 180px, var(--color-paper) 180px);
+}
+.tm-setup-card {
+  max-width: 480px;
+  width: 100%;
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 40px rgba(20,40,63,0.25);
+  padding: 28px 24px;
+}
+.tm-setup-emoji { font-size: 2.6rem; }
+
+/* ---- Toast ---- */
+.tm-toast {
+  position: fixed;
+  bottom: calc(var(--nav-height) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-ink-dark);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  z-index: 60;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  max-width: 90%;
+  text-align: center;
+}
+.tm-toast.show { opacity: 1; }
+
+/* ---- Print styles ---- */
+@media print {
+  .tm-bottom-nav, .tm-topbar, .no-print { display: none !important; }
+  body { padding-bottom: 0; background: #fff; }
+  .tm-print-report { box-shadow: none !important; border: none !important; }
+}
+
+/* ---- Misc ---- */
+.tm-muted { color: var(--color-text-muted); }
+.tm-amount { font-variant-numeric: tabular-nums; font-weight: 600; }
+.tm-divider { height: 1px; background: var(--color-border); margin: 12px 0; }
+
+/* ==========================================================================
+   Responsive breakpoints
+   Mobile-first base styles above target small phones (~360px+).
+   The rules below scale the layout up for larger phones, tablets,
+   laptops and desktop monitors, and back down for very small phones.
+   ========================================================================== */
+
+/* ---- Very small phones (<360px, e.g. older/compact devices) ---- */
+@media (max-width: 359.98px) {
+  .tm-container { padding: 12px; }
+  .tm-topbar { padding: 12px; }
+  .tm-topbar .center-name { font-size: 1rem; }
+  .tm-stat-tile .value { font-size: 1.3rem; }
+  .tm-stat-grid { gap: 8px; }
+  .tm-attend-toggle button { padding: 6px 10px; font-size: 0.76rem; }
+  .btn-lg-tap { font-size: 0.92rem; }
+  .tm-setup-card { padding: 20px 16px; }
+}
+
+/* ---- Small phones and up: attendance rows get breathing room ---- */
+@media (min-width: 400px) {
+  .tm-attend-toggle button { padding: 7px 16px; }
+}
+
+/* ---- Tablets (portrait) and large phones (landscape) ---- */
+@media (min-width: 576px) {
+  .tm-stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .tm-quick-actions { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .tm-setup-wrap { padding: 40px 24px; }
+}
+
+/* ---- Tablets and small laptops ---- */
+@media (min-width: 768px) {
+  .tm-container { max-width: 880px; }
+
+  /* List containers become a responsive card grid instead of a single
+     mobile column, so browsing students/fees/history makes better use
+     of the extra width. */
+  #studentListContainer,
+  #feesListContainer,
+  #tmRecentPaymentsList,
+  #tmTodayAttendanceList {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    align-items: start;
+  }
+  #studentListContainer .tm-index-card,
+  #feesListContainer .tm-index-card,
+  #tmRecentPaymentsList .tm-index-card,
+  #tmTodayAttendanceList .tm-index-card {
+    margin-bottom: 0;
+  }
+  .tm-empty { grid-column: 1 / -1; }
+
+  /* Bottom nav becomes a centered floating dock rather than a full-width
+     bar, so it reads as a toolbar instead of a mobile tab bar. */
+  .tm-bottom-nav {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    bottom: 16px;
+    width: min(90%, 520px);
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 8px 24px rgba(20, 40, 63, 0.16);
+    overflow: hidden;
+  }
+
+  .tm-setup-card { padding: 36px 32px; }
+}
+
+/* ---- Laptops and desktop monitors ---- */
+@media (min-width: 992px) {
+  .tm-container { max-width: 1040px; padding: 24px; }
+
+  #studentListContainer,
+  #feesListContainer {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tm-stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  /* Give report/attendance/settings cards more breathing room instead of
+     stretching full-width on a wide monitor. */
+  .tm-card, #studentReportContent .tm-card {
+    padding: 20px;
+  }
+
+  /* Two-column layout for tab content on wide screens where useful */
+  #attReportPane .tm-stat-grid,
+  #feesReportPane .tm-stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ---- Large desktop monitors ---- */
+@media (min-width: 1200px) {
+  .tm-container { max-width: 1120px; }
+  #studentListContainer,
+  #feesListContainer {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  #tmRecentPaymentsList,
+  #tmTodayAttendanceList {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ---- Landscape phones (short viewport height) ---- */
+@media (max-height: 480px) and (orientation: landscape) {
+  .tm-bottom-nav { display: none; }
+  body { padding-bottom: 16px; }
+  .tm-setup-wrap { padding: 16px; align-items: flex-start; }
+}
+
+/* ---- Tables and wide content never overflow the viewport ---- */
+.tm-month-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ==========================================================================
+   Modals — robust sizing on real phone viewports.
+   Mobile browsers report 100vh larger than the visible area once the
+   address bar is accounted for, which is what makes a modal's footer
+   buttons get cut off. dvh (dynamic viewport height) fixes that on
+   browsers that support it; the vh line above it is the fallback for
+   the ones that don't.
+   ========================================================================== */
+html, body { overflow-x: hidden; }
+
+.modal-dialog {
+  margin: 0.75rem auto;
+  width: calc(100% - 1.5rem);
+  max-width: 500px;
+}
+.modal-dialog.modal-lg { max-width: 700px; }
+.modal-content {
+  border-radius: var(--radius-md);
+  border: none;
+  max-height: calc(100vh - 1.5rem);
+  max-height: calc(100dvh - 1.5rem);
+  /* Add these to ensure the body scrolls while header/footer stay fixed */
+  display: flex; 
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal-dialog-scrollable .modal-content {
+  max-height: calc(100vh - 1.5rem);
+  max-height: calc(100dvh - 1.5rem);
+}
+.modal-body {
+  flex: 1 1 auto; /* Allows the body to expand to fill space, but shrink when constrained */
+  min-height: 0;  /* Required in flexbox so the container can shrink smaller than its content, triggering the scrollbar */
+  overflow-x: hidden;      /* Bootstrap's .row negative gutter margins
+                               must never create a sideways scrollbar
+                               inside the modal. */
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto; 
+}
+/* Several modals (Add Student, Add Payment) wrap .modal-body and
+   .modal-footer inside a <form>. That form sits between .modal-content
+   (flex column) and .modal-body/.modal-footer, and as a plain block
+   element it breaks the flex chain: modal-content's overflow:hidden
+   then just clips the form at max-height instead of letting the body
+   scroll, so the footer (Save/Cancel) disappears entirely on short
+   viewports. Making the form itself a flex column re-establishes the
+   chain so modal-body's overflow-y:auto can actually take effect. */
+.modal-content > form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+.modal-header, .modal-footer { 
+  flex-shrink: 0; /* Forces the header and footer to keep their original size */
+  flex-wrap: wrap; 
+  row-gap: 8px; 
+}
+
+/* Extra breathing room above the iPhone home-indicator / Android
+   gesture bar, so a modal's last button never sits underneath it. */
+.modal-footer {
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+}
+
+@media (max-width: 420px) {
+  .modal-dialog { width: calc(100% - 1rem); margin: 0.5rem auto; }
+  /* Two fields side-by-side (Parent Name/Phone, Joining Date/Fee,
+     Payment Date/Amount) get tight on very small phones — stack them
+     instead of squeezing both into half-width columns. */
+  .modal-body .row > .col-6 { flex: 0 0 100%; max-width: 100%; width: 100%; }
+}
+
+/* ---- Respect reduced-motion preferences ---- */
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
