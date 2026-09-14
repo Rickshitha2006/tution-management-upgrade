@@ -110,7 +110,25 @@ function settingsToApi(row) {
     contactNumber: row.contact_number || "",
     address: row.address || "",
     setupComplete: !!row.setup_complete,
+    // Branding/signatures — always base64 data: URLs or "" (never null,
+    // so the frontend never has to special-case null/undefined here).
+    logoData: row.logo_data || "",
+    headName: row.head_name || "",
+    headSignatureData: row.head_signature_data || "",
+    staffSignatureData: row.staff_signature_data || "",
   };
+}
+
+// Each image field is a base64 data: URL already resized/compressed on
+// the client (see js/image-processing.js). This is a generous server-side
+// backstop, not the primary size control — it exists so a buggy/bypassed
+// client can never wedge an oversized row into D1.
+const TM_MAX_IMAGE_FIELD_CHARS = 700000; // ~500KB of binary data, base64-encoded
+
+function tmValidateImageField(value, label) {
+  if (value && typeof value === "string" && value.length > TM_MAX_IMAGE_FIELD_CHARS) {
+    throw new Error(label + " is too large. Please use a smaller image.");
+  }
 }
 
 /* ---------------------------- auth middleware ---------------------------- */
@@ -239,16 +257,29 @@ async function handleGetSettings(request, env, user) {
 
 async function handlePutSettings(request, env, user) {
   const body = await readJson(request);
+
+  try {
+    tmValidateImageField(body.logoData, "Logo");
+    tmValidateImageField(body.headSignatureData, "Head signature");
+    tmValidateImageField(body.staffSignatureData, "Staff signature");
+  } catch (err) {
+    return errorResponse(err.message, 413);
+  }
+
   const now = nowIso();
   await env.DB.prepare(
-    `INSERT INTO settings (user_id, tuition_center_name, staff_name, contact_number, address, setup_complete, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO settings (user_id, tuition_center_name, staff_name, contact_number, address, setup_complete, logo_data, head_name, head_signature_data, staff_signature_data, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(user_id) DO UPDATE SET
        tuition_center_name = excluded.tuition_center_name,
        staff_name = excluded.staff_name,
        contact_number = excluded.contact_number,
        address = excluded.address,
        setup_complete = excluded.setup_complete,
+       logo_data = excluded.logo_data,
+       head_name = excluded.head_name,
+       head_signature_data = excluded.head_signature_data,
+       staff_signature_data = excluded.staff_signature_data,
        updated_at = excluded.updated_at`
   )
     .bind(
@@ -258,6 +289,10 @@ async function handlePutSettings(request, env, user) {
       body.contactNumber || "",
       body.address || "",
       body.setupComplete ? 1 : 0,
+      body.logoData || "",
+      body.headName || "",
+      body.headSignatureData || "",
+      body.staffSignatureData || "",
       now
     )
     .run();
@@ -596,14 +631,18 @@ async function handleBulkRestore(request, env, user) {
   if (settings) {
     statements.push(
       env.DB.prepare(
-        `INSERT INTO settings (user_id, tuition_center_name, staff_name, contact_number, address, setup_complete, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO settings (user_id, tuition_center_name, staff_name, contact_number, address, setup_complete, logo_data, head_name, head_signature_data, staff_signature_data, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(user_id) DO UPDATE SET
            tuition_center_name = excluded.tuition_center_name,
            staff_name = excluded.staff_name,
            contact_number = excluded.contact_number,
            address = excluded.address,
            setup_complete = excluded.setup_complete,
+           logo_data = excluded.logo_data,
+           head_name = excluded.head_name,
+           head_signature_data = excluded.head_signature_data,
+           staff_signature_data = excluded.staff_signature_data,
            updated_at = excluded.updated_at`
       ).bind(
         user.id,
@@ -612,6 +651,10 @@ async function handleBulkRestore(request, env, user) {
         settings.contactNumber || "",
         settings.address || "",
         settings.setupComplete ? 1 : 0,
+        settings.logoData || "",
+        settings.headName || "",
+        settings.headSignatureData || "",
+        settings.staffSignatureData || "",
         now
       )
     );

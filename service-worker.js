@@ -5,7 +5,7 @@
    (e.g. https://username.github.io/tuition-manager/).
    ========================================================================== */
 
-const TM_CACHE_VERSION = "tuition-manager-v4";
+const TM_CACHE_VERSION = "tuition-manager-v5";
 
 // Resolve the scope this service worker was registered under.
 const TM_SCOPE = self.registration ? self.registration.scope : self.location.href;
@@ -24,6 +24,8 @@ const TM_APP_SHELL = [
   "js/legacy-local-db.js",
   "js/migrate.js",
   "js/utils.js",
+  "js/image-processing.js",
+  "js/pdf-reports.js",
   "js/app.js",
   "js/students.js",
   "js/attendance.js",

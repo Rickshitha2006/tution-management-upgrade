@@ -41,6 +41,27 @@
         <label class="form-label" for="setupAddress">Address <span class="tm-muted fw-normal">(optional)</span></label>
         <textarea class="form-control" id="setupAddress" rows="2" placeholder="Enter address"></textarea>
       </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="setupLogo">Tuition Logo <span class="tm-muted fw-normal">(optional)</span></label>
+        <input type="file" class="form-control" id="setupLogo" accept="image/png,image/jpeg,image/webp">
+        <img id="setupLogoPreview" class="d-none mt-2" style="max-height:64px; max-width:100%;" alt="Logo preview">
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="setupHeadName">Tuition Head Name <span class="tm-muted fw-normal">(optional)</span></label>
+        <input type="text" class="form-control" id="setupHeadName" placeholder="Only needed if you want a head signature on reports">
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="setupHeadSignature">Tuition Head Signature <span class="tm-muted fw-normal">(optional)</span></label>
+        <input type="file" class="form-control" id="setupHeadSignature" accept="image/png,image/jpeg,image/webp">
+        <img id="setupHeadSignaturePreview" class="d-none mt-2" style="max-height:64px; max-width:100%;" alt="Head signature preview">
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="setupStaffSignature">Staff Signature <span class="tm-muted fw-normal">(optional)</span></label>
+        <input type="file" class="form-control" id="setupStaffSignature" accept="image/png,image/jpeg,image/webp">
+        <img id="setupStaffSignaturePreview" class="d-none mt-2" style="max-height:64px; max-width:100%;" alt="Staff signature preview">
+      </div>
+
       <button type="submit" class="btn btn-tm-primary btn-lg-tap w-100">Continue</button>
     </form>
     <p class="tm-muted text-center mt-3 mb-0" style="font-size:0.8rem;">
@@ -114,6 +135,7 @@
 <script src="js/config.js"></script>
 <script src="js/db.js"></script>
 <script src="js/utils.js"></script>
+<script src="js/image-processing.js"></script>
 <script src="js/app.js"></script>
 <script>
   tmRegisterServiceWorker();

@@ -49,13 +49,40 @@
         <label class="form-label">Address</label>
         <textarea class="form-control" id="settingsAddress" rows="2"></textarea>
       </div>
+
+      <div class="tm-divider"></div>
+
+      <div class="mb-3">
+        <label class="form-label">Tuition Logo <span class="tm-muted fw-normal">(shown on reports)</span></label>
+        <img id="settingsLogoPreview" class="d-none mb-2 d-block" style="max-height:64px; max-width:100%;" alt="Logo preview">
+        <input type="file" class="form-control" id="settingsLogo" accept="image/png,image/jpeg,image/webp">
+        <button type="button" id="btnRemoveLogo" class="btn btn-tm-outline btn-sm mt-2 d-none">Remove Logo</button>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Tuition Head Name <span class="tm-muted fw-normal">(optional)</span></label>
+        <input type="text" class="form-control" id="settingsHeadName" placeholder="Only needed if you want a head signature on reports">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Tuition Head Signature</label>
+        <img id="settingsHeadSignaturePreview" class="d-none mb-2 d-block" style="max-height:64px; max-width:100%;" alt="Head signature preview">
+        <input type="file" class="form-control" id="settingsHeadSignature" accept="image/png,image/jpeg,image/webp">
+        <button type="button" id="btnRemoveHeadSignature" class="btn btn-tm-outline btn-sm mt-2 d-none">Remove Signature</button>
+      </div>
+      <div class="mb-4">
+        <label class="form-label">Staff Signature</label>
+        <img id="settingsStaffSignaturePreview" class="d-none mb-2 d-block" style="max-height:64px; max-width:100%;" alt="Staff signature preview">
+        <input type="file" class="form-control" id="settingsStaffSignature" accept="image/png,image/jpeg,image/webp">
+        <button type="button" id="btnRemoveStaffSignature" class="btn btn-tm-outline btn-sm mt-2 d-none">Remove Signature</button>
+      </div>
+      <p class="tm-muted mb-3" style="font-size:0.8rem;">Signatures are automatically cropped and have their background removed so only the ink appears on reports.</p>
+
       <button type="submit" class="btn btn-tm-primary btn-lg-tap w-100">Save Changes</button>
     </form>
   </div>
 
   <div class="tm-section-title"><span>Backup &amp; Restore</span><span class="rule"></span></div>
   <div class="tm-card">
-    <p class="tm-muted">Because this app stores data only on this device, regular backups are important.</p>
+    <p class="tm-muted">Regular backups are a good extra safety net alongside cloud sync.</p>
     <button id="btnBackupNow" class="btn btn-tm-primary btn-lg-tap w-100 mb-3">Backup All Data</button>
 
     <label class="form-label">Restore from Backup</label>
@@ -119,6 +146,7 @@
 <script src="js/config.js"></script>
 <script src="js/db.js"></script>
 <script src="js/utils.js"></script>
+<script src="js/image-processing.js"></script>
 <script src="js/app.js"></script>
 <script src="js/legacy-local-db.js"></script>
 <script src="js/migrate.js"></script>

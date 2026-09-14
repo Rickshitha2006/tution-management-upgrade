@@ -23,6 +23,7 @@ async function tmInitReportsPage() {
 
   document.getElementById("studentReportSelect").addEventListener("change", tmRenderStudentReport);
   document.getElementById("btnPrintStudentReport").addEventListener("click", () => window.print());
+  document.getElementById("btnDownloadStudentReportPdf").addEventListener("click", tmHandleDownloadStudentReportPdf);
 
   document.getElementById("attReportStudentSelect").addEventListener("change", tmRenderAttendanceReport);
   document.getElementById("attReportRange").addEventListener("change", tmRenderAttendanceReport);
@@ -34,6 +35,8 @@ async function tmInitReportsPage() {
   document.getElementById("feesReportStudentSelect").addEventListener("change", tmRenderFeesReport);
   document.getElementById("feesReportMonth").addEventListener("change", tmRenderFeesReport);
   document.getElementById("feesReportYear").addEventListener("change", tmRenderFeesReport);
+
+  document.getElementById("btnGenerateMonthlyAllReport").addEventListener("click", tmHandleGenerateMonthlyAllReport);
 
   tmRenderStudentReport();
   tmRenderAttendanceReport();
@@ -71,6 +74,17 @@ function tmPopulateMonthYearSelects() {
     const el = document.getElementById(id);
     el.innerHTML = years.map((y) => `<option value="${y}" ${y === now.getFullYear() ? "selected" : ""}>${y}</option>`).join("");
   });
+
+  // Monthly All-Students Report always needs one specific month picked
+  // (there's no "All months" option here — see item 29 of the brief).
+  const monthlyMonthEl = document.getElementById("monthlyAllReportMonth");
+  if (monthlyMonthEl) {
+    monthlyMonthEl.innerHTML = months.map((m, i) => `<option value="${i}" ${i === now.getMonth() ? "selected" : ""}>${m}</option>`).join("");
+  }
+  const monthlyYearEl = document.getElementById("monthlyAllReportYear");
+  if (monthlyYearEl) {
+    monthlyYearEl.innerHTML = years.map((y) => `<option value="${y}" ${y === now.getFullYear() ? "selected" : ""}>${y}</option>`).join("");
+  }
 }
 
 /* ---------------------------- Student report ---------------------------- */
@@ -297,4 +311,44 @@ function tmRenderFeesReport() {
         })
         .join("")
     : `<p class="tm-muted">No payments recorded in this period.</p>`;
+}
+
+/* ---------------------------- PDF report handlers ---------------------------- */
+
+async function tmHandleDownloadStudentReportPdf(e) {
+  const btn = e.currentTarget;
+  const studentId = document.getElementById("studentReportSelect").value;
+  if (!studentId) {
+    tmToast("Please select a student first.");
+    return;
+  }
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Generating…";
+  try {
+    await tmGenerateIndividualReportPdf(studentId);
+  } catch (err) {
+    tmToast(err.message || "Could not generate the PDF report.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+}
+
+async function tmHandleGenerateMonthlyAllReport(e) {
+  const btn = e.currentTarget;
+  const monthIndex = parseInt(document.getElementById("monthlyAllReportMonth").value, 10);
+  const year = parseInt(document.getElementById("monthlyAllReportYear").value, 10);
+
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Generating monthly report…";
+  try {
+    await tmGenerateMonthlyAllStudentsReportPdf(year, monthIndex);
+  } catch (err) {
+    tmToast(err.message || "Could not generate the monthly report.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
 }

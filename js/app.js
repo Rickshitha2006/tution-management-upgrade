@@ -144,28 +144,75 @@ async function tmInitDashboard() {
 function tmWireSetupForm() {
   const form = document.getElementById("tmSetupForm");
   if (!form) return;
+
+  tmWireImagePreview("setupLogo", "setupLogoPreview", tmProcessLogoFile);
+  tmWireImagePreview("setupHeadSignature", "setupHeadSignaturePreview", tmProcessSignatureFile);
+  tmWireImagePreview("setupStaffSignature", "setupStaffSignaturePreview", tmProcessSignatureFile);
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const centerName = document.getElementById("setupCenterName").value.trim();
     const staffName = document.getElementById("setupStaffName").value.trim();
     const contact = document.getElementById("setupContact").value.trim();
     const address = document.getElementById("setupAddress").value.trim();
+    const headName = document.getElementById("setupHeadName").value.trim();
 
     if (!centerName || !staffName) {
       tmToast("Please enter the tuition center name and staff name.");
       return;
     }
 
-    await TMDB.saveSettings({
-      tuitionCenterName: centerName,
-      staffName: staffName,
-      contactNumber: contact,
-      address: address,
-      setupComplete: true,
-    });
+    const submitBtn = form.querySelector("button[type=submit]");
+    submitBtn.disabled = true;
 
-    tmToast("Setup complete. Welcome!");
-    setTimeout(() => tmInitDashboard(), 400);
+    try {
+      await TMDB.saveSettings({
+        tuitionCenterName: centerName,
+        staffName: staffName,
+        contactNumber: contact,
+        address: address,
+        headName: headName,
+        logoData: document.getElementById("setupLogoPreview").dataset.processed || "",
+        headSignatureData: document.getElementById("setupHeadSignaturePreview").dataset.processed || "",
+        staffSignatureData: document.getElementById("setupStaffSignaturePreview").dataset.processed || "",
+        setupComplete: true,
+      });
+
+      tmToast("Setup complete. Welcome!");
+      setTimeout(() => tmInitDashboard(), 400);
+    } catch (err) {
+      tmToast(err.message || "Could not save setup. Please try again.");
+      submitBtn.disabled = false;
+    }
+  });
+}
+
+/**
+ * Wires a file input + <img> preview pair: on file selection, runs the
+ * image through the given processor (logo resize, or signature
+ * background-removal+crop — see js/image-processing.js), shows the
+ * processed result in the preview, and stashes the resulting data URL on
+ * preview.dataset.processed so the caller can read it back at submit
+ * time without reprocessing. Used on both the first-time setup form and
+ * the Settings page.
+ */
+function tmWireImagePreview(inputId, previewId, processorFn) {
+  const input = document.getElementById(inputId);
+  const preview = document.getElementById(previewId);
+  if (!input || !preview) return;
+
+  input.addEventListener("change", async () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    try {
+      const dataUrl = await processorFn(file);
+      preview.src = dataUrl;
+      preview.dataset.processed = dataUrl;
+      preview.classList.remove("d-none");
+    } catch (err) {
+      tmToast(err.message || "Could not process that image.");
+      input.value = "";
+    }
   });
 }
 

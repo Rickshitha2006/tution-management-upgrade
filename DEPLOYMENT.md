@@ -1,5 +1,39 @@
 # Deployment Guide — Cloudflare Cloud Sync Upgrade
 
+## 🆕 What's new in THIS upgrade (branding + signatures + PDF reports)
+
+You already have the Worker + D1 backend deployed and working. This
+upgrade only adds: a tuition logo, head/staff signatures (with automatic
+background removal), an individual-report PDF download, and a new
+"Monthly (All Students)" PDF report. **You do not need to redo the
+Worker deploy from scratch** — just run one more migration and redeploy.
+
+From your `worker` folder:
+
+```powershell
+cd worker
+npm run db:migrate:remote
+npm run deploy
+```
+
+That's it for the backend — `db:migrate:remote` runs the new
+`migrations/0002_branding.sql` (adds four columns to the `settings`
+table; existing rows are untouched, they just get empty values for the
+new fields), and `npm run deploy` re-uploads the Worker with the updated
+API code that reads/writes them.
+
+For the frontend: since `js/config.js` already points at your deployed
+Worker, there's nothing to reconfigure — just commit and push the
+updated files (see "How to push this into GitHub" from earlier in this
+conversation) and redeploy/refresh however you're hosting the frontend
+(GitHub Pages / Cloudflare Pages).
+
+**Try it:** Settings → scroll to "Tuition Center Information" → upload a
+logo and/or signatures → Save Changes → go to Reports → "Monthly (All)"
+tab → pick a month → Generate & Download PDF.
+
+---
+
 This upgrade adds account login and cross-device cloud sync to Tuition
 Manager, backed by a Cloudflare Worker + D1 database. **The UI, theme,
 navigation, Settings features and every existing screen are unchanged** —

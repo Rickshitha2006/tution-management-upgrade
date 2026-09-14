@@ -12,6 +12,19 @@ async function tmInitSettingsPage() {
   document.getElementById("settingsStaffName").value = settings.staffName || "";
   document.getElementById("settingsContact").value = settings.contactNumber || "";
   document.getElementById("settingsAddress").value = settings.address || "";
+  document.getElementById("settingsHeadName").value = settings.headName || "";
+
+  tmPreloadImagePreview("settingsLogoPreview", "btnRemoveLogo", settings.logoData);
+  tmPreloadImagePreview("settingsHeadSignaturePreview", "btnRemoveHeadSignature", settings.headSignatureData);
+  tmPreloadImagePreview("settingsStaffSignaturePreview", "btnRemoveStaffSignature", settings.staffSignatureData);
+
+  tmWireImagePreview("settingsLogo", "settingsLogoPreview", tmProcessLogoFile);
+  tmWireImagePreview("settingsHeadSignature", "settingsHeadSignaturePreview", tmProcessSignatureFile);
+  tmWireImagePreview("settingsStaffSignature", "settingsStaffSignaturePreview", tmProcessSignatureFile);
+
+  tmWireRemoveImageButton("btnRemoveLogo", "settingsLogo", "settingsLogoPreview");
+  tmWireRemoveImageButton("btnRemoveHeadSignature", "settingsHeadSignature", "settingsHeadSignaturePreview");
+  tmWireRemoveImageButton("btnRemoveStaffSignature", "settingsStaffSignature", "settingsStaffSignaturePreview");
 
   document.getElementById("settingsForm").addEventListener("submit", tmSaveSettingsForm);
 
@@ -47,6 +60,41 @@ async function tmInitSettingsPage() {
   document.getElementById("btnImportLegacyLocal").addEventListener("click", tmManualImportLegacyLocalData);
 }
 
+/**
+ * Shows an already-saved logo/signature (loaded from settings) in its
+ * preview <img> and reveals the "Remove" button, so editing an existing
+ * account doesn't start from a blank slate every time. Stashes the
+ * value on preview.dataset.processed exactly like tmWireImagePreview
+ * does for a freshly-picked file, so tmSaveSettingsForm can read every
+ * image field the same way regardless of whether it changed this visit.
+ */
+function tmPreloadImagePreview(previewId, removeBtnId, existingDataUrl) {
+  const preview = document.getElementById(previewId);
+  const removeBtn = document.getElementById(removeBtnId);
+  if (!preview) return;
+  preview.dataset.processed = existingDataUrl || "";
+  if (existingDataUrl) {
+    preview.src = existingDataUrl;
+    preview.classList.remove("d-none");
+    if (removeBtn) removeBtn.classList.remove("d-none");
+  }
+}
+
+/** Wires a "Remove Logo/Signature" button: clears the field, hides the preview/button, resets the file input. */
+function tmWireRemoveImageButton(removeBtnId, inputId, previewId) {
+  const removeBtn = document.getElementById(removeBtnId);
+  const input = document.getElementById(inputId);
+  const preview = document.getElementById(previewId);
+  if (!removeBtn) return;
+  removeBtn.addEventListener("click", () => {
+    preview.dataset.processed = "";
+    preview.src = "";
+    preview.classList.add("d-none");
+    if (input) input.value = "";
+    removeBtn.classList.add("d-none");
+  });
+}
+
 async function tmSaveSettingsForm(e) {
   e.preventDefault();
   const centerName = document.getElementById("settingsCenterName").value.trim();
@@ -57,16 +105,29 @@ async function tmSaveSettingsForm(e) {
     return;
   }
 
-  await TMDB.saveSettings({
-    tuitionCenterName: centerName,
-    staffName: staffName,
-    contactNumber: document.getElementById("settingsContact").value.trim(),
-    address: document.getElementById("settingsAddress").value.trim(),
-    setupComplete: true,
-  });
+  const submitBtn = e.target.querySelector("button[type=submit]");
+  submitBtn.disabled = true;
 
-  tmToast("Settings saved.");
-  await tmLoadHeaderInfo();
+  try {
+    await TMDB.saveSettings({
+      tuitionCenterName: centerName,
+      staffName: staffName,
+      contactNumber: document.getElementById("settingsContact").value.trim(),
+      address: document.getElementById("settingsAddress").value.trim(),
+      headName: document.getElementById("settingsHeadName").value.trim(),
+      logoData: document.getElementById("settingsLogoPreview").dataset.processed || "",
+      headSignatureData: document.getElementById("settingsHeadSignaturePreview").dataset.processed || "",
+      staffSignatureData: document.getElementById("settingsStaffSignaturePreview").dataset.processed || "",
+      setupComplete: true,
+    });
+
+    tmToast("Settings saved.");
+    await tmLoadHeaderInfo();
+  } catch (err) {
+    tmToast(err.message || "Could not save settings.");
+  } finally {
+    submitBtn.disabled = false;
+  }
 }
 
 async function tmHandleRestoreFile() {
