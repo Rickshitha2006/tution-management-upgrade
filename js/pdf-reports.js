@@ -65,6 +65,21 @@ function tmMonthLabelFor(year, monthIndex) {
 }
 
 /**
+ * Currency for PDF text only. jsPDF's built-in fonts (Helvetica/Times/
+ * Courier) don't include the ₹ glyph — tmFormatCurrency()'s "₹" renders
+ * as a broken/fallback character in the generated PDF (a stray mark
+ * before the number) even though it displays correctly everywhere on
+ * screen, where the browser's own font covers it. Embedding a ₹-capable
+ * font just for this symbol wasn't worth the extra weight, so PDF output
+ * uses "Rs." instead — the on-screen app and tmFormatCurrency() itself
+ * are unchanged.
+ */
+function tmFormatCurrencyForPdf(amount) {
+  const value = Number(amount) || 0;
+  return "Rs. " + value.toLocaleString("en-IN", { maximumFractionDigits: 2 });
+}
+
+/**
  * Attendance % for a PDF: same formula/inputs as tmAttendanceStats (the
  * exact function every on-screen report already uses, so the numbers
  * always match), but rendered as "N/A" instead of "0%" when there were
@@ -267,8 +282,8 @@ function tmDrawStudentSection(doc, student, attStats, feeInfo, startY) {
   doc.setFontSize(10);
   doc.setTextColor(30, 30, 30);
   const feeRows = [];
-  if (feeInfo.monthlyFee !== undefined) feeRows.push(["Monthly Fee", tmFormatCurrency(feeInfo.monthlyFee)]);
-  feeRows.push(["Amount Paid", tmFormatCurrency(feeInfo.paidForMonth)]);
+  if (feeInfo.monthlyFee !== undefined) feeRows.push(["Monthly Fee", tmFormatCurrencyForPdf(feeInfo.monthlyFee)]);
+  feeRows.push(["Amount Paid", tmFormatCurrencyForPdf(feeInfo.paidForMonth)]);
   feeRows.push(["Payment Status", feeInfo.status]);
   feeRows.forEach(([label, value]) => {
     doc.text(label, left, y);
