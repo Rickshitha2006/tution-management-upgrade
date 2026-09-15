@@ -65,6 +65,21 @@ function tmMonthLabelFor(year, monthIndex) {
 }
 
 /**
+ * Currency for PDF text only. jsPDF's built-in fonts (Helvetica/Times/
+ * Courier) don't include the ₹ glyph — tmFormatCurrency()'s "₹" renders
+ * as a broken/fallback character in the generated PDF (a stray mark
+ * before the number) even though it displays correctly everywhere on
+ * screen, where the browser's own font covers it. Embedding a ₹-capable
+ * font just for this symbol wasn't worth the extra weight, so PDF output
+ * uses "Rs." instead — the on-screen app and tmFormatCurrency() itself
+ * are unchanged.
+ */
+function tmFormatCurrencyForPdf(amount) {
+  const value = Number(amount) || 0;
+  return "Rs. " + value.toLocaleString("en-IN", { maximumFractionDigits: 2 });
+}
+
+/**
  * Attendance % for a PDF: same formula/inputs as tmAttendanceStats (the
  * exact function every on-screen report already uses, so the numbers
  * always match), but rendered as "N/A" instead of "0%" when there were
@@ -145,17 +160,25 @@ async function tmDrawReportHeader(doc, settings, title, subtitle) {
 }
 
 /**
- * Places signature(s) near the bottom of the current page:
+ * Places signature(s) a fixed gap below the report content (not pinned
+ * to the physical bottom of the page) — a short one-page report
+ * shouldn't leave a huge empty gap just to push signatures to the very
+ * bottom margin. If content runs long enough that this would push the
+ * signature off the page, it's capped just above the bottom margin
+ * instead (the old fixed-bottom behavior, as a safety net only):
  *   - both present  → head bottom-left, staff bottom-right (item 17)
  *   - only one      → that one, bottom-right, no empty box for the other (item 18)
  *   - neither       → nothing drawn, no broken placeholder (item 56)
  * Never invents a name/title the user didn't provide (item 19).
  */
-async function tmDrawSignatureBlock(doc, settings, bottomY) {
+async function tmDrawSignatureBlock(doc, settings, afterContentY) {
   const pageWidth = TM_PDF_PAGE_WIDTH_MM;
   const boxWidth = 42; // mm
   const boxHeight = 16; // mm
-  const sigY = bottomY - boxHeight - 8;
+  const SIGNATURE_GAP_MM = 22; // breathing room below content, not a full page-bottom push
+
+  const maxSigY = TM_PDF_PAGE_HEIGHT_MM - TM_PDF_MARGIN_MM - boxHeight - 12; // leaves room for name label + footer
+  const sigY = Math.min(afterContentY + SIGNATURE_GAP_MM, maxSigY);
 
   const hasHead = !!settings.headSignatureData;
   const hasStaff = !!settings.staffSignatureData;
@@ -267,8 +290,8 @@ function tmDrawStudentSection(doc, student, attStats, feeInfo, startY) {
   doc.setFontSize(10);
   doc.setTextColor(30, 30, 30);
   const feeRows = [];
-  if (feeInfo.monthlyFee !== undefined) feeRows.push(["Monthly Fee", tmFormatCurrency(feeInfo.monthlyFee)]);
-  feeRows.push(["Amount Paid", tmFormatCurrency(feeInfo.paidForMonth)]);
+  if (feeInfo.monthlyFee !== undefined) feeRows.push(["Monthly Fee", tmFormatCurrencyForPdf(feeInfo.monthlyFee)]);
+  feeRows.push(["Amount Paid", tmFormatCurrencyForPdf(feeInfo.paidForMonth)]);
   feeRows.push(["Payment Status", feeInfo.status]);
   feeRows.forEach(([label, value]) => {
     doc.text(label, left, y);
@@ -319,7 +342,7 @@ async function tmGenerateIndividualReportPdf(studentId) {
       y
     );
 
-    await tmDrawSignatureBlock(doc, settings || {}, TM_PDF_PAGE_HEIGHT_MM - TM_PDF_MARGIN_MM);
+    await tmDrawSignatureBlock(doc, settings || {}, y);
     tmStampFootersAndPageNumbers(doc, centerName, "");
 
     const today = new Date();
@@ -380,8 +403,8 @@ async function tmGenerateMonthlyAllStudentsReportPdf(year, monthIndex) {
       const attStats = tmAttendanceStats(studentAttendance);
       const feeInfo = tmMonthFeeStatus(student, studentPayments, monthKey);
 
-      tmDrawStudentSection(doc, student, attStats, feeInfo, y0);
-      await tmDrawSignatureBlock(doc, settings || {}, TM_PDF_PAGE_HEIGHT_MM - TM_PDF_MARGIN_MM);
+      const yEnd = tmDrawStudentSection(doc, student, attStats, feeInfo, y0);
+      await tmDrawSignatureBlock(doc, settings || {}, yEnd);
     }
 
     tmStampFootersAndPageNumbers(doc, centerName, monthLabel);
