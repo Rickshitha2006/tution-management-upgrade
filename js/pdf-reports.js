@@ -160,14 +160,15 @@ async function tmDrawReportHeader(doc, settings, title, subtitle) {
 }
 
 /**
- * Places signature(s) at a consistent position — about two-thirds down
- * the page — rather than immediately after wherever the content happens
- * to end. A signature that sits right under a short summary looks
- * arbitrary/incomplete; a fixed "closing" position (like a real signed
- * letter) reads as deliberate no matter how short or long the content
- * above it is. If content is long enough to reach that position on its
- * own, the signature simply follows it with a normal gap instead
- * (capped just above the bottom margin as a safety net either way):
+ * Places signature(s) pinned to a fixed, consistent position near the
+ * true bottom of the page — bottom-left / bottom-right — on every
+ * report, regardless of how much content sits above it (that consistency
+ * is what makes it read as an official closing block rather than
+ * something placed wherever the content happened to end). The middle of
+ * the page is filled by the watermark instead, so pinning the signature
+ * to the bottom no longer leaves it looking like empty dead space (see
+ * tmDrawWatermark). Falls back to sitting just below the content only if
+ * the content is unusually long and would otherwise overlap it.
  *   - both present  → head bottom-left, staff bottom-right (item 17)
  *   - only one      → that one, bottom-right, no empty box for the other (item 18)
  *   - neither       → nothing drawn, no broken placeholder (item 56)
@@ -177,11 +178,10 @@ async function tmDrawSignatureBlock(doc, settings, afterContentY) {
   const pageWidth = TM_PDF_PAGE_WIDTH_MM;
   const boxWidth = 42; // mm
   const boxHeight = 16; // mm
-  const SIGNATURE_GAP_MM = 22; // minimum breathing room below content
-  const SIGNATURE_BASELINE_MM = TM_PDF_PAGE_HEIGHT_MM * 0.64; // consistent "closing" position for short reports
+  const MIN_GAP_AFTER_CONTENT_MM = 14; // safety net only, for unusually long content
 
-  const maxSigY = TM_PDF_PAGE_HEIGHT_MM - TM_PDF_MARGIN_MM - boxHeight - 12; // leaves room for name label + footer
-  const sigY = Math.min(Math.max(afterContentY + SIGNATURE_GAP_MM, SIGNATURE_BASELINE_MM), maxSigY);
+  const fixedBottomSigY = TM_PDF_PAGE_HEIGHT_MM - TM_PDF_MARGIN_MM - boxHeight - 14; // leaves room for name label + footer
+  const sigY = Math.max(fixedBottomSigY, afterContentY + MIN_GAP_AFTER_CONTENT_MM);
 
   const hasHead = !!settings.headSignatureData;
   const hasStaff = !!settings.staffSignatureData;
@@ -232,6 +232,48 @@ function tmDrawPageBorder(doc) {
   doc.setDrawColor(190, 190, 190);
   doc.setLineWidth(0.4);
   doc.rect(inset, inset, TM_PDF_PAGE_WIDTH_MM - inset * 2, TM_PDF_PAGE_HEIGHT_MM - inset * 2);
+}
+
+/**
+ * A very faint, centered watermark filling the middle of the page —
+ * either the tuition logo (if one is set) or the tuition name as large
+ * rotated text otherwise. Drawn first, low-opacity, before anything
+ * else, so all the real content sits cleanly on top of it. This is what
+ * lets the signature sit fixed at the true page bottom (see
+ * tmDrawSignatureBlock) without the middle of a short report looking
+ * like empty dead space.
+ */
+async function tmDrawWatermark(doc, settings) {
+  const pageWidth = TM_PDF_PAGE_WIDTH_MM;
+  const pageHeight = TM_PDF_PAGE_HEIGHT_MM;
+
+  doc.saveGraphicsState();
+  doc.setGState(new doc.GState({ opacity: 0.07 }));
+
+  if (settings.logoData) {
+    try {
+      const dims = await tmGetImageDims(settings.logoData);
+      const box = tmFitBox(dims.width, dims.height, 130, 130);
+      doc.addImage(settings.logoData, "PNG", (pageWidth - box.width) / 2, (pageHeight - box.height) / 2, box.width, box.height);
+    } catch {
+      /* if the logo can't be read, fall through to the text watermark below */
+      tmDrawTextWatermark(doc, settings, pageWidth, pageHeight);
+    }
+  } else {
+    tmDrawTextWatermark(doc, settings, pageWidth, pageHeight);
+  }
+
+  doc.restoreGraphicsState();
+}
+
+function tmDrawTextWatermark(doc, settings, pageWidth, pageHeight) {
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(44);
+  doc.setTextColor(60, 60, 60);
+  doc.text((settings.tuitionCenterName || "TUITION MANAGER").toUpperCase(), pageWidth / 2, pageHeight / 2, {
+    align: "center",
+    angle: 30,
+  });
 }
 
 /** Adds "Centre Name · Month Year" + generation date (left) and "Page X of Y" (right) to every page — run once, after all pages exist. */
@@ -351,6 +393,7 @@ async function tmGenerateIndividualReportPdf(studentId) {
 
     const doc = new jsPDF({ unit: "mm", format: "a4" });
     tmDrawPageBorder(doc);
+    await tmDrawWatermark(doc, settings || {});
     let y = await tmDrawReportHeader(doc, settings || {}, "STUDENT REPORT", "");
 
     y = tmDrawStudentSection(
@@ -415,6 +458,7 @@ async function tmGenerateMonthlyAllStudentsReportPdf(year, monthIndex) {
       const student = activeStudents[i];
       if (i > 0) doc.addPage();
       tmDrawPageBorder(doc);
+      await tmDrawWatermark(doc, settings || {});
 
       const y0 = await tmDrawReportHeader(doc, settings || {}, "MONTHLY STUDENT REPORT", monthLabel.toUpperCase());
 
