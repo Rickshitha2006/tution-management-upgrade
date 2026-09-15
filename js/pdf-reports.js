@@ -160,12 +160,14 @@ async function tmDrawReportHeader(doc, settings, title, subtitle) {
 }
 
 /**
- * Places signature(s) a fixed gap below the report content (not pinned
- * to the physical bottom of the page) — a short one-page report
- * shouldn't leave a huge empty gap just to push signatures to the very
- * bottom margin. If content runs long enough that this would push the
- * signature off the page, it's capped just above the bottom margin
- * instead (the old fixed-bottom behavior, as a safety net only):
+ * Places signature(s) at a consistent position — about two-thirds down
+ * the page — rather than immediately after wherever the content happens
+ * to end. A signature that sits right under a short summary looks
+ * arbitrary/incomplete; a fixed "closing" position (like a real signed
+ * letter) reads as deliberate no matter how short or long the content
+ * above it is. If content is long enough to reach that position on its
+ * own, the signature simply follows it with a normal gap instead
+ * (capped just above the bottom margin as a safety net either way):
  *   - both present  → head bottom-left, staff bottom-right (item 17)
  *   - only one      → that one, bottom-right, no empty box for the other (item 18)
  *   - neither       → nothing drawn, no broken placeholder (item 56)
@@ -175,10 +177,11 @@ async function tmDrawSignatureBlock(doc, settings, afterContentY) {
   const pageWidth = TM_PDF_PAGE_WIDTH_MM;
   const boxWidth = 42; // mm
   const boxHeight = 16; // mm
-  const SIGNATURE_GAP_MM = 22; // breathing room below content, not a full page-bottom push
+  const SIGNATURE_GAP_MM = 22; // minimum breathing room below content
+  const SIGNATURE_BASELINE_MM = TM_PDF_PAGE_HEIGHT_MM * 0.64; // consistent "closing" position for short reports
 
   const maxSigY = TM_PDF_PAGE_HEIGHT_MM - TM_PDF_MARGIN_MM - boxHeight - 12; // leaves room for name label + footer
-  const sigY = Math.min(afterContentY + SIGNATURE_GAP_MM, maxSigY);
+  const sigY = Math.min(Math.max(afterContentY + SIGNATURE_GAP_MM, SIGNATURE_BASELINE_MM), maxSigY);
 
   const hasHead = !!settings.headSignatureData;
   const hasStaff = !!settings.staffSignatureData;
@@ -217,16 +220,31 @@ async function tmDrawSignatureBlock(doc, settings, afterContentY) {
   }
 }
 
-/** Adds "Centre Name · Month Year" (left) and "Page X of Y" (right) to every page — run once, after all pages exist. */
+/**
+ * A thin inset border around the whole page — the single biggest visual
+ * difference between "a formal document" and "some text on a blank
+ * page." Subtle and restrained (light grey, no fill), matching the
+ * brief's request for clean, professional styling rather than a
+ * decorated/colorful report (item 45).
+ */
+function tmDrawPageBorder(doc) {
+  const inset = 8; // mm from the physical page edge
+  doc.setDrawColor(190, 190, 190);
+  doc.setLineWidth(0.4);
+  doc.rect(inset, inset, TM_PDF_PAGE_WIDTH_MM - inset * 2, TM_PDF_PAGE_HEIGHT_MM - inset * 2);
+}
+
+/** Adds "Centre Name · Month Year" + generation date (left) and "Page X of Y" (right) to every page — run once, after all pages exist. */
 function tmStampFootersAndPageNumbers(doc, centerName, periodLabel) {
   const totalPages = doc.internal.getNumberOfPages();
+  const generatedOn = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(130, 130, 130);
     const footerY = TM_PDF_PAGE_HEIGHT_MM - 10;
-    doc.text(`${centerName}${periodLabel ? " · " + periodLabel : ""}`, TM_PDF_MARGIN_MM, footerY);
+    doc.text(`${centerName}${periodLabel ? " · " + periodLabel : ""} · Generated ${generatedOn}`, TM_PDF_MARGIN_MM, footerY);
     doc.text(`Page ${i} of ${totalPages}`, TM_PDF_PAGE_WIDTH_MM - TM_PDF_MARGIN_MM, footerY, { align: "right" });
   }
 }
@@ -332,6 +350,7 @@ async function tmGenerateIndividualReportPdf(studentId) {
     const centerName = settings?.tuitionCenterName || "Tuition Manager";
 
     const doc = new jsPDF({ unit: "mm", format: "a4" });
+    tmDrawPageBorder(doc);
     let y = await tmDrawReportHeader(doc, settings || {}, "STUDENT REPORT", "");
 
     y = tmDrawStudentSection(
@@ -395,6 +414,7 @@ async function tmGenerateMonthlyAllStudentsReportPdf(year, monthIndex) {
     for (let i = 0; i < activeStudents.length; i++) {
       const student = activeStudents[i];
       if (i > 0) doc.addPage();
+      tmDrawPageBorder(doc);
 
       const y0 = await tmDrawReportHeader(doc, settings || {}, "MONTHLY STUDENT REPORT", monthLabel.toUpperCase());
 
