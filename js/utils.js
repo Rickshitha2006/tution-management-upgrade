@@ -91,6 +91,56 @@ function tmFormatMonthKey(key) {
   return tmMonthLabel(y, m - 1);
 }
 
+/**
+ * Fee status for one student in one specific month, derived only from
+ * data the app already has (monthlyFee + payments tagged for that month
+ * via tmPaymentMonthKey) — never an invented due-date/billing judgement.
+ * Used by the fee reminder feature (js/fees.js) to decide whether a
+ * "Remind" button should appear for the current month.
+ */
+function tmFeeStatusForMonth(student, payments, monthKey) {
+  const monthlyFee = Number(student.monthlyFee) || 0;
+  const paidForMonth = payments
+    .filter((p) => tmPaymentMonthKey(p) === monthKey)
+    .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+  if (monthlyFee <= 0) {
+    return { paidForMonth, monthlyFee, status: paidForMonth > 0 ? "PAID" : "NOT_TRACKED" };
+  }
+  if (paidForMonth <= 0) return { paidForMonth, monthlyFee, status: "PENDING" };
+  if (paidForMonth >= monthlyFee) return { paidForMonth, monthlyFee, status: "PAID" };
+  return { paidForMonth, monthlyFee, status: "PARTIAL" };
+}
+
+/**
+ * Cleans a phone number the user entered (spaces, dashes, a leading "+",
+ * an optional "91") down to a plain 91XXXXXXXXXX string suitable for a
+ * wa.me/sms: link. Returns null if it doesn't look like a valid 10-digit
+ * Indian mobile number — callers should treat that as "no usable number
+ * on file" rather than guessing.
+ */
+function tmNormalizeIndianPhone(raw) {
+  if (!raw) return null;
+  let digits = String(raw).replace(/[^\d]/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) digits = digits.slice(2);
+  if (digits.length !== 10) return null;
+  return "91" + digits;
+}
+
+/** Builds a wa.me link that opens WhatsApp with the message pre-filled — no API, no account, just a URL. */
+function tmBuildWhatsAppLink(phone, message) {
+  const normalized = tmNormalizeIndianPhone(phone);
+  if (!normalized) return null;
+  return `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`;
+}
+
+/** Builds an sms: link that opens the phone's Messages app with the text pre-filled (mobile only). */
+function tmBuildSmsLink(phone, message) {
+  const normalized = tmNormalizeIndianPhone(phone);
+  if (!normalized) return null;
+  return `sms:+${normalized}?body=${encodeURIComponent(message)}`;
+}
+
 function tmEscapeHtml(str) {
   if (str === undefined || str === null) return "";
   return String(str)
@@ -477,4 +527,70 @@ function tmStartOfMonthStr(date = new Date()) {
 
 function tmEndOfMonthStr(date = new Date()) {
   return tmDateToStr(new Date(date.getFullYear(), date.getMonth() + 1, 0));
+}
+
+/* ---------------------------- offline attendance queue ---------------------------- */
+// Lets "Mark Attendance" keep working with patchy/no internet: a failed
+// save is queued in localStorage instead of lost, and gets pushed to the
+// cloud automatically once a connection is available again (see
+// tmFlushOfflineAttendanceQueue, called from js/app.js on page load and
+// on the browser's "online" event, and from js/attendance.js right after
+// a save that couldn't reach the server). No extra API calls are made
+// beyond the ones that would happen anyway once online — this only
+// delays some of them.
+
+const TM_OFFLINE_ATTENDANCE_QUEUE_KEY = "tm_offline_attendance_queue";
+
+function tmGetOfflineAttendanceQueue() {
+  try {
+    return JSON.parse(localStorage.getItem(TM_OFFLINE_ATTENDANCE_QUEUE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function tmSaveOfflineAttendanceQueue(queue) {
+  try {
+    localStorage.setItem(TM_OFFLINE_ATTENDANCE_QUEUE_KEY, JSON.stringify(queue));
+  } catch {
+    /* storage full/unavailable — best effort only, never blocks marking attendance */
+  }
+}
+
+/**
+ * Queues one attendance mark for later sync, replacing any earlier
+ * queued mark for the same student+date — mirrors the server's own
+ * upsert-by-student-and-date behavior, so re-marking the same day before
+ * it even syncs just updates the queued entry instead of stacking dupes.
+ */
+function tmQueueOfflineAttendance(studentId, date, status) {
+  const queue = tmGetOfflineAttendanceQueue().filter((q) => !(q.studentId === studentId && q.date === date));
+  queue.push({ studentId, date, status, queuedAt: new Date().toISOString() });
+  tmSaveOfflineAttendanceQueue(queue);
+}
+
+/**
+ * Attempts to push every queued attendance mark to the cloud. Each entry
+ * succeeds or fails independently — anything that still fails (still
+ * offline) stays queued for the next attempt, so this is safe to call
+ * repeatedly (every page load, every "back online" event) without
+ * risking a partial queue getting stuck or duplicated.
+ * Returns the number of entries successfully synced this call.
+ */
+async function tmFlushOfflineAttendanceQueue() {
+  const queue = tmGetOfflineAttendanceQueue();
+  if (queue.length === 0) return 0;
+
+  const stillQueued = [];
+  let syncedCount = 0;
+  for (const entry of queue) {
+    try {
+      await TMDB.markAttendance(entry.studentId, entry.date, entry.status);
+      syncedCount++;
+    } catch {
+      stillQueued.push(entry);
+    }
+  }
+  tmSaveOfflineAttendanceQueue(stillQueued);
+  return syncedCount;
 }

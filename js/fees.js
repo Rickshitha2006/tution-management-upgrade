@@ -83,16 +83,64 @@ function tmRenderFeesList() {
 
   container.innerHTML = rows
     .map(({ student, summary }) => {
+      const monthStatus = tmFeeStatusForMonth(student, tmFeesPayments.filter((p) => p.studentId === student.id), tmThisMonthKey());
+      const showRemind = monthStatus.status === "PENDING" || monthStatus.status === "PARTIAL";
       return `
-      <a href="#" class="tm-index-card" onclick="tmOpenFeeDetailModal('${student.id}'); return false;">
-        <div class="d-flex justify-content-between align-items-center">
-          <span class="name">${tmEscapeHtml(student.name)}</span>
-          <span class="tm-badge neutral">${tmFormatCurrency(summary.totalPaid)} paid</span>
-        </div>
-        <div class="meta">Monthly fee: ${tmFormatCurrency(student.monthlyFee)}</div>
-      </a>`;
+      <div class="tm-index-card">
+        <a href="#" style="text-decoration:none; color:inherit; display:block;" onclick="tmOpenFeeDetailModal('${student.id}'); return false;">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="name">${tmEscapeHtml(student.name)}</span>
+            <span class="tm-badge neutral">${tmFormatCurrency(summary.totalPaid)} paid</span>
+          </div>
+          <div class="meta">Monthly fee: ${tmFormatCurrency(student.monthlyFee)}</div>
+        </a>
+        ${
+          showRemind
+            ? `<button type="button" class="btn btn-tm-outline btn-sm mt-2" onclick="event.stopPropagation(); tmSendFeeReminder('${student.id}');">📲 Remind about this month's fee</button>`
+            : ""
+        }
+      </div>`;
     })
     .join("");
+}
+
+/**
+ * Opens WhatsApp (falling back to plain SMS) with a fee-reminder message
+ * pre-filled — this is just a `wa.me`/`sms:` link, no WhatsApp Business
+ * API, no account, no cost. Uses the student's parent phone if on file,
+ * otherwise the student's own phone; shows a clear message instead of a
+ * broken link if neither is available.
+ */
+async function tmSendFeeReminder(studentId) {
+  const student = tmFeesStudents.find((s) => s.id === studentId);
+  if (!student) return;
+
+  const phone = student.parentPhone || student.studentPhone;
+  if (!phone) {
+    tmToast("No phone number on file for this student. Add one under Students to send reminders.");
+    return;
+  }
+
+  const monthKey = tmThisMonthKey();
+  const payments = tmFeesPayments.filter((p) => p.studentId === studentId);
+  const status = tmFeeStatusForMonth(student, payments, monthKey);
+  const remaining = Math.max(0, (status.monthlyFee || 0) - (status.paidForMonth || 0));
+
+  const settings = await TMDB.getSettings();
+  const centerName = settings?.tuitionCenterName || "the tuition center";
+  const monthLabel = tmFormatMonthKey(monthKey);
+
+  const message =
+    `Hi, this is a reminder from ${centerName} that ${student.name}'s tuition fee ` +
+    `of ${tmFormatCurrency(remaining)} for ${monthLabel} is pending. ` +
+    `Kindly pay at your earliest convenience. Thank you!`;
+
+  const waLink = tmBuildWhatsAppLink(phone, message);
+  if (!waLink) {
+    tmToast("The phone number on file doesn't look like a valid 10-digit number.");
+    return;
+  }
+  window.open(waLink, "_blank");
 }
 
 /* ---------------------------- Fee detail modal ---------------------------- */

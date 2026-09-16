@@ -30,6 +30,7 @@ async function tmInitAttendancePage() {
   tmPopulateStudentSelect();
   await tmLoadAttendanceForDate();
   tmRenderAttendanceHistory();
+  tmRefreshOfflineQueueBanner();
 
   const studentParam = tmGetQueryParam("student");
   if (studentParam) {
@@ -111,11 +112,58 @@ async function tmSaveAttendance() {
     return;
   }
 
-  await Promise.all(entries.map(([studentId, status]) => TMDB.markAttendance(studentId, date, status)));
-  tmToast("Attendance saved for " + tmFormatDate(date) + ".");
+  let savedCount = 0;
+  let queuedCount = 0;
 
-  tmAttAllRecords = await TMDB.getAllAttendance();
+  for (const [studentId, status] of entries) {
+    try {
+      await TMDB.markAttendance(studentId, date, status);
+      savedCount++;
+    } catch (err) {
+      // No connection right now — queue it instead of losing the mark.
+      // See tmQueueOfflineAttendance in js/utils.js; it syncs
+      // automatically once the connection comes back (js/app.js).
+      tmQueueOfflineAttendance(studentId, date, status);
+      // Reflect the queued mark immediately in this session's in-memory
+      // records so History shows it right away, flagged as not yet
+      // confirmed by the server (see the "⏳" marker in the render below).
+      // This is a display-only patch — the queue itself is the real
+      // source of truth for what still needs to sync.
+      tmAttAllRecords = tmAttAllRecords.filter((r) => !(r.studentId === studentId && r.date === date));
+      tmAttAllRecords.push({
+        id: "offline-" + studentId + "-" + date,
+        studentId,
+        date,
+        status,
+        markedAt: status === "Present" ? new Date().toISOString() : null,
+        pendingSync: true,
+      });
+      queuedCount++;
+    }
+  }
+
+  if (queuedCount > 0) {
+    tmToast(`${savedCount} saved, ${queuedCount} queued offline — they'll sync automatically once you're back online.`);
+  } else {
+    tmToast("Attendance saved for " + tmFormatDate(date) + ".");
+    tmAttAllRecords = await TMDB.getAllAttendance();
+  }
+
   tmRenderAttendanceHistory();
+  tmRefreshOfflineQueueBanner();
+}
+
+/** Shows/hides the small banner on the Attendance page when marks are waiting to sync. */
+function tmRefreshOfflineQueueBanner() {
+  const banner = document.getElementById("offlineQueueBanner");
+  if (!banner) return;
+  const count = tmGetOfflineAttendanceQueue().length;
+  if (count > 0) {
+    banner.textContent = `⏳ ${count} attendance record(s) waiting to sync — they'll upload automatically once you're back online.`;
+    banner.classList.remove("d-none");
+  } else {
+    banner.classList.add("d-none");
+  }
 }
 
 /* ---------------------------- History tab ---------------------------- */
@@ -201,10 +249,16 @@ function tmRenderAttendanceHistory() {
           // don't have one, and Absent records never do — in both cases
           // this stays blank rather than showing a made-up time.
           const time = r.status === "Present" ? tmFormatTime12h(r.markedAt) : "";
+          // r.pendingSync is a display-only flag set locally when a save
+          // couldn't reach the server and was queued instead (see
+          // tmSaveAttendance) — it clears itself once the queue syncs
+          // and this list is next reloaded from the server.
+          const pendingTag = r.pendingSync ? `<span class="tm-muted" style="font-size:0.75rem;" title="Not yet synced to the cloud">⏳</span>` : "";
           return `
         <div class="d-flex justify-content-between align-items-center border-bottom py-2">
           <span>${tmEscapeHtml(studentMap[r.studentId] || "Unknown student")}</span>
           <span class="d-flex align-items-center gap-2">
+            ${pendingTag}
             ${time ? `<span class="tm-muted" style="font-size:0.8rem;">${time}</span>` : ""}
             <span class="tm-badge ${r.status === "Present" ? "success" : "danger"}">${r.status}</span>
           </span>

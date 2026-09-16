@@ -26,6 +26,29 @@ function tmRegisterServiceWorker() {
 }
 
 /**
+ * Tries to push any queued offline attendance marks (see
+ * tmFlushOfflineAttendanceQueue in js/utils.js) once when the page loads,
+ * and again automatically whenever the browser regains a connection —
+ * so a queued mark from a patchy-WiFi moment doesn't just sit there
+ * until the user happens to revisit the Attendance page. Called on
+ * every page (alongside tmRegisterServiceWorker) since connectivity can
+ * come back while the user is anywhere in the app.
+ */
+function tmRegisterOfflineSync() {
+  if (!TMAuth.isLoggedIn()) return;
+
+  const trySync = () => {
+    tmFlushOfflineAttendanceQueue().then((count) => {
+      if (count > 0) tmToast(count + " queued attendance record(s) synced.");
+      if (typeof tmRefreshOfflineQueueBanner === "function") tmRefreshOfflineQueueBanner();
+    });
+  };
+
+  trySync();
+  window.addEventListener("online", trySync);
+}
+
+/**
  * Injects the bottom navigation bar into #tmBottomNav (if present on the page)
  * and highlights the current page.
  */
