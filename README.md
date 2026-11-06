@@ -1,787 +1,287 @@
-# Smart Academy System
+# 🎓 Smart Academy System
 
-> **A simple, secure and cloud-synced academy management PWA for managing students, attendance and fees from any device.**
+### A Smarter Way to Manage Your Academy
 
-Smart Academy System (formerly Tuition Manager) is a lightweight Progressive Web App (PWA) designed to replace a traditional tuition teacher's paper notebook with a simple digital system.
+Smart Academy System is a modern, cloud-based academy management application designed to simplify everyday tuition and coaching centre operations.
 
-The application allows you to manage **students, daily attendance, attendance history, attendance marking times, fees, reports and backups** from a phone or computer.
+It replaces traditional paper-based record keeping with a digital platform where administrators can manage students, attendance, fees, staff records, salary details, and reports from a single application.
 
-The latest version adds **account login, Cloudflare cloud storage and cross-device synchronization** and the new Smart Academy design.
+Built as a Progressive Web App (PWA), it works across mobile phones, tablets, and desktop devices.
 
 ---
 
-## Old version still showing? (buttons not working, totals stuck at 0)
+## ✨ Key Features
 
-Your browser is mixing cached old files with new ones. Fix it once:
+### 👨‍🎓 1. Student Management
+- Add, edit, and delete student records.
+- Maintain student and parent details.
+- Store contact numbers, joining dates, and monthly fees.
+- Search and manage student information.
+- Track individual student profiles and status.
 
-1. Close every tab of the app.
-2. Start the server on a **new port**, which gives a clean browser cache:
-   `python -m http.server 8090` and open `http://localhost:8090`
-3. Or clear it: press `F12`, **Application** → **Service Workers** → **Unregister**, then
-   **Storage** → **Clear site data**, and reload with `Ctrl+Shift+R`.
+### 📝 2. Attendance Management
+- Record daily student attendance.
+- Mark students as Present or Absent.
+- Mark all students present at once.
+- View attendance history.
+- Calculate attendance percentages.
+- Filter records by day, week, month, year, or custom date.
+- Record the exact time when a student is marked Present.
 
-After the backend update (`wrangler d1 migrations apply ... --remote` then `wrangler deploy`)
-the app always loads fresh files.
+### 💰 3. Fee Management
+- Track monthly tuition fees.
+- Record student payments.
+- Support Cash, UPI, Bank Transfer, and other payment methods.
+- Monitor paid and pending fees.
+- Calculate remaining balances and overpayments.
+- View individual payment histories.
 
-## Password reset by email
+### 👩‍🏫 4. Staff Management
+- Maintain teacher and staff information.
+- Record daily staff attendance.
+- Track Present, Half Day, Absent, and Leave statuses.
+- Manage monthly salary records.
+- Calculate salary adjustments using bonuses and advances.
+- Track paid and pending salaries.
+- Export salary records to CSV.
+- Generate PDF salary slips.
 
-See `EMAIL-SETUP.md` (free, uses Brevo).
+### 📊 5. Reports & Analytics
+- Student reports.
+- Attendance summaries.
+- Fee collection reports.
+- Pending payment details.
+- Staff attendance summaries.
+- Salary reports.
+- Print reports or save them as PDF.
 
-## Put it online for free
+### 🔍 6. Global Search
+Quickly find important records using:
+- Student name.
+- Student ID.
+- Parent name.
+- Phone number.
 
-See `FREE-HOSTING.md` for step-by-step instructions (Cloudflare Pages + Workers + D1, all free).
-The public website is `index.html`; the app is `dashboard.html`.
+### ☁️ 7. Cloud Storage & Synchronization
+- Store records using Cloudflare D1.
+- Synchronize data across multiple devices.
+- Access the same account from different devices.
+- Keep each user's records separate.
+- Retrieve saved information after logging in again.
 
-## New: Staff attendance and salary sheet
+### 🔐 8. Authentication & Data Security
+- Account registration and login.
+- Password handling through the backend.
+- Separate data for each user account.
+- Authentication checks for protected operations.
+- Private backend credentials are not exposed in frontend code.
 
-Manage teachers and assistants alongside students: daily staff attendance
-(Present / Half day / Absent / Leave), a monthly salary sheet with bonus and
-advance adjustments, paid/pending tracking, CSV export and PDF salary slips.
-See `UPGRADE-SMART-ACADEMY.md` for details and deployment steps.
+### 💾 9. Backup & Restore
+- Create backups of academy records.
+- Restore previously saved data.
+- Export and load data.
+- Clear account data when required.
+- Load demo records for testing.
 
+### 📱 10. Progressive Web App
+- Installable on supported devices.
+- Mobile-friendly interface.
+- Responsive desktop layout.
+- App-like experience through the browser.
+- Service worker support.
 
-## ✨ What's New
+---
 
-The latest version upgrades the original local-only application with cloud functionality.
+## 🛠️ Technology Stack
 
-### ☁️ Cloud Sync
+| Technology | Purpose |
+|---|---|
+| HTML5 | Page structure |
+| CSS3 | Styling and layouts |
+| Bootstrap 5 | Responsive UI components |
+| JavaScript | Application functionality |
+| Cloudflare Pages | Frontend hosting |
+| Cloudflare Workers | Backend API |
+| Cloudflare D1 | Cloud database |
+| Progressive Web App | Installable application |
+| Service Worker | Application caching |
 
-* Cloud-based student data
-* Cloud-based attendance records
-* Cloud-based fee records
-* Data synchronized across multiple devices
-* Same account can be used on different phones/computers
-* Data remains available after changing devices
+---
 
-### 🔐 Account Login
+## 🏗️ System Architecture
 
-* Secure user account login
-* Passwords are securely handled
-* Each account has its own separate data
-* Users cannot access another user's records
-
-### 🕐 Attendance Timestamp
-
-Attendance now records the **exact time when a student is marked Present**.
-
-Example:
+The application follows a cloud-based architecture.
 
 ```text
-Arun
-Present
-10 Sep 2026 • 5:42 PM
+        User Device
+       Mobile / Desktop
+              |
+              v
+      Cloudflare Pages
+          Frontend
+              |
+              v
+      Cloudflare Workers
+        Backend API
+       Authentication
+              |
+              v
+        Cloudflare D1
+        Cloud Database
 ```
 
-This makes it easier to identify students who arrive early or late.
-
-**Important:** Attendance timestamps are shown only inside the application's Attendance History. They are **not included in Excel/CSV exports**.
-
-### 📱 Multi-Device Support
-
-The same account can be used on multiple devices.
-
-For example:
-
-```text
-Phone 1
-   ↓
-Login
-   ↓
-Add Student
-   ↓
-Mark Attendance
-   ↓
-Cloudflare D1
-   ↑
-   │
-Phone 2
-   ↑
-Login with same account
-   ↑
-Same data
-```
-
-Changes made on one device can be accessed from another device using the same account.
+Each account accesses its own records through the authenticated backend.
 
 ---
 
-# 🎯 1. What is Tuition Manager?
-
-Tuition Manager is a simple digital register for tuition teachers.
-
-Instead of maintaining:
-
-* Student notebooks
-* Attendance notebooks
-* Fee notebooks
-* Separate backup files
-
-everything can be managed from one application.
-
-The application is designed to remain **simple and easy to use**, similar to maintaining a physical tuition register.
-
----
-
-# 🚀 2. Features
-
-## 👨‍🎓 Student Management
-
-* Add students
-* Edit student details
-* Delete students
-* Search students
-* View student profiles
-* Parent information
-* Phone numbers
-* Monthly fee
-* Joining date
-* Notes
-* Student status
-
----
-
-## 📝 Attendance Management
-
-* Daily attendance
-* Mark Present / Absent
-* Mark All Present
-* Edit attendance
-* Attendance history
-* Attendance percentage
-* Today / Week / Month / Custom / Year filters
-* Attendance records synchronized to the cloud
-
-### 🕐 Attendance Marking Time
-
-Whenever a student is marked **Present**, the application records the actual time.
-
-Example:
-
-```text
-10 Sep 2026
-Arun       Present     5:42 PM
-Rahul      Present     6:18 PM
-Priya      Present     5:35 PM
-```
-
-This makes it easy to identify late arrivals.
-
-The timestamp:
-
-* Is stored securely in the cloud
-* Appears in Attendance History
-* Synchronizes across devices
-* Is not included in Excel/CSV exports
-
----
-
-# 💰 3. Fee Management
-
-Manage tuition fee payments from one place.
-
-Features include:
-
-* Monthly fee tracking
-* Record payments
-* Cash
-* UPI
-* Bank Transfer
-* Other payment methods
-* Paid / Pending status
-* Pending balance
-* Overpaid calculation
-* Payment history
-* Fee reports
-
----
-
-# 📊 4. Reports
-
-Generate useful reports for tuition management.
-
-Available reports include:
-
-### Student Reports
-
-View individual student information and payment/attendance details.
-
-### Attendance Reports
-
-View attendance summaries with date and month/year filters.
-
-### Fee Reports
-
-View payment and pending-fee information.
-
-Reports can be printed or saved as PDF using the browser's print functionality.
-
----
-
-# 🔎 5. Global Search
-
-Search across important student information including:
-
-* Student name
-* Student ID
-* Parent name
-* Phone number
-
----
-
-# 💾 6. Backup & Restore
-
-The application includes data management tools inside Settings.
-
-### Backup
-
-Create a backup of your tuition data.
-
-### Restore
-
-Restore previously backed-up data when required.
-
-### Export Data
-
-Export tuition information in the existing supported format.
-
-### Load Data
-
-Import previously exported data.
-
-### Clear All Data
-
-Remove the current account's data after confirmation.
-
-### Demo Data
-
-Load demo records for testing.
-
-Demo data can also be removed when testing is complete.
-
----
-
-# ☁️ 7. Cloud Architecture
-
-The latest version uses Cloudflare for the backend.
-
-```text
-                    ┌──────────────────┐
-                    │     User Device  │
-                    │   Phone/Desktop  │
-                    └────────┬─────────┘
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │ Cloudflare Pages │
-                    │    Frontend      │
-                    └────────┬─────────┘
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │ Cloudflare Worker│
-                    │   API + Auth     │
-                    └────────┬─────────┘
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │  Cloudflare D1   │
-                    │   Cloud Database │
-                    └──────────────────┘
-```
-
-### Technologies
-
-* HTML5
-* CSS3
-* Bootstrap 5
-* Vanilla JavaScript
-* Cloudflare Pages
-* Cloudflare Workers
-* Cloudflare D1
-* Progressive Web App (PWA)
-
----
-
-# 🔐 8. Data Security
-
-Each user account has its own data.
-
-The backend verifies authentication before allowing access to:
-
-* Students
-* Attendance
-* Attendance timestamps
-* Fees
-* Backups
-* Other account data
-
-User passwords are not stored as plain text.
-
-Cloudflare credentials and private secrets are not exposed in the frontend.
-
----
-
-# 📱 9. Multi-Device Usage
-
-You can use the same account on multiple devices.
-
-### Example
-
-On Device 1:
-
-```text
-Login
-↓
-Add Arun
-↓
-Monthly Fee: ₹500
-↓
-Mark Present
-↓
-Attendance Time: 5:42 PM
-```
-
-On Device 2:
-
-```text
-Login with same account
-↓
-Arun appears
-↓
-₹500 fee appears
-↓
-Present appears
-↓
-5:42 PM appears in Attendance History
-```
-
-If attendance or fee information is changed on one device, the updated cloud data can be accessed from the other device.
-
----
-
-# 📤 10. Excel / CSV Export
-
-The application supports data export for use with:
-
-* Microsoft Excel
-* Google Sheets
-* Other spreadsheet applications
-
-### Important
-
-Attendance marking timestamps are **not exported**.
-
-For example, the application may display:
-
-```text
-Arun | Present | 5:42 PM
-```
-
-inside Attendance History.
-
-But the exported data remains:
-
-```text
-Date | Student | Attendance
-10 Sep 2026 | Arun | Present
-```
-
-There is no timestamp column.
-
-This keeps the existing export format clean and compatible.
-
----
-
-# 📲 11. Progressive Web App
-
-Tuition Manager is an installable PWA.
-
-It can be installed on supported mobile and desktop devices.
-
-After installation, it can appear like a normal application on the device.
-
-### Android
-
-1. Open the live application in Chrome.
-2. Open the browser menu.
-3. Select **Install App** or **Add to Home Screen**.
-4. Confirm installation.
-5. Launch Tuition Manager from the home screen.
-
----
-
-# 🌐 12. Deployment
-
-The project source code is maintained on GitHub.
-
-The recommended production architecture is:
-
-```text
-GitHub
-   ↓
-Cloudflare Pages
-   ↓
-Cloudflare Worker
-   ↓
-Cloudflare D1
-```
-
-GitHub is used for source-code management and version control.
-
-Cloudflare provides the application hosting and cloud backend.
-
----
-
-# 🛠️ 13. Local Development
-
-Clone the repository:
-
-```bash
-git clone https://github.com/Rickshitha2006/tution-management-upgrade.git
-```
-
-Enter the project:
-
-```bash
-cd tution-management-upgrade
-```
-
-For the frontend, a simple local web server can be used.
-
-### Python
-
-```bash
-python -m http.server 8000
-```
-
-Then open:
-
-```text
-http://localhost:8000
-```
-
-For Cloudflare Worker development, use the Cloudflare development tools/configuration included in the project.
-
----
-
-# 📁 14. Project Structure
-
-The project structure may vary slightly as the cloud backend is integrated, but the main architecture is:
+## 📂 Project Structure
 
 ```text
 tution-management-upgrade/
 │
 ├── index.html
+├── dashboard.html
+├── login.html
 ├── students.html
 ├── attendance.html
 ├── fees.html
+├── staff.html
 ├── reports.html
+├── holidays.html
 ├── settings.html
+├── reset-password.html
 │
 ├── css/
-│   └── style.css
 │
 ├── js/
-│   ├── app.js
-│   ├── db.js
-│   ├── utils.js
-│   ├── students.js
-│   ├── attendance.js
-│   ├── fees.js
-│   ├── reports.js
-│   ├── backup.js
-│   └── settings.js
 │
 ├── worker/
 │   ├── src/
-│   │   └── ...
 │   ├── migrations/
-│   │   └── ...
 │   └── wrangler.toml
 │
 ├── icons/
-│   ├── icon-192.png
-│   └── icon-512.png
 │
 ├── manifest.json
 ├── service-worker.js
+│
 ├── DEPLOYMENT.md
+├── FREE-HOSTING.md
+├── EMAIL-SETUP.md
 └── README.md
 ```
 
-The exact structure should follow the current implementation.
-
 ---
 
-# 🔄 15. Original Local Storage
+## 🚀 Getting Started
 
-The original version of Tuition Manager used browser-based IndexedDB storage.
+### 1. Clone the Repository
 
-The upgraded version introduces cloud storage through Cloudflare D1.
-
-Existing local data should be migrated safely when moving to the cloud version.
-
-The application should never silently delete existing tuition records during migration.
-
----
-
-# ⚙️ 16. Settings
-
-The existing Settings functionality is preserved.
-
-Settings includes functionality such as:
-
-* Center information
-* Staff information
-* Backup
-* Restore
-* Export Data
-* Load Data
-* Clear All Data
-* Load Demo Data
-* Remove Demo Data
-
-These features continue to operate for the currently authenticated account.
-
-**Clear All Data only affects the logged-in user's data.**
-
----
-
-# 🎨 17. UI & Design
-
-The application's original interface is intentionally preserved.
-
-The upgrade does **not** replace the original design with a new dashboard.
-
-The following remain consistent:
-
-* Green and white theme
-* Navigation
-* Cards
-* Buttons
-* Forms
-* Icons
-* Typography
-* Spacing
-* Attendance interface
-* Fee interface
-* Student interface
-* Settings interface
-* Mobile responsiveness
-* Desktop responsiveness
-
-The main additions are:
-
-* Account login
-* Cloud synchronization
-* Multi-device access
-* Attendance marking timestamp
-
----
-
-# 📡 18. Internet & Cloud Sync
-
-The original application was designed around local/offline storage.
-
-The upgraded version uses cloud synchronization for shared multi-device data.
-
-An internet connection is required when communicating with the cloud backend.
-
-The application should never falsely indicate that a cloud change has synchronized when the device is offline.
-
----
-
-# 🧪 19. Testing
-
-Important functionality to test before daily use:
-
-### Authentication
-
-* Registration
-* Login
-* Logout
-* Invalid login
-* Session handling
-
-### Students
-
-* Add
-* Edit
-* Delete
-* Search
-* Sort
-* Filter
-
-### Attendance
-
-* Present
-* Absent
-* Mark All Present
-* Attendance history
-* Date filters
-* Attendance percentage
-* Attendance timestamp
-
-### Fees
-
-* Add payment
-* Paid
-* Pending
-* Payment history
-* Fee calculations
-
-### Settings
-
-* Export
-* Load
-* Restore
-* Clear All Data
-* Load Demo Data
-* Remove Demo Data
-
-### Multi-device
-
-* Login on Device 1
-* Add student
-* Mark attendance
-* Verify timestamp
-* Login on Device 2
-* Verify the same student/data
-* Modify data on Device 2
-* Verify the update on Device 1
-
----
-
-# 💡 20. Example Daily Workflow
-
-A typical tuition session can be managed like this:
-
-### Before Class
-
-Open Tuition Manager.
-
-```text
-Dashboard
-↓
-Attendance
-↓
-Mark All Present
+```bash
+git clone https://github.com/Rickshitha2006/tution-management-upgrade.git
 ```
 
-### During Class
+### 2. Navigate to the Project
 
-Mark students who are absent.
-
-The application records the time when each Present attendance is marked.
-
-Example:
-
-```text
-Arun       Present     5:35 PM
-Rahul      Present     5:48 PM
-Priya      Present     6:12 PM
-Kavin      Absent
+```bash
+cd tution-management-upgrade
 ```
 
-This makes late arrivals easy to identify from Attendance History.
+### 3. Run the Frontend Locally
 
-### Fee Collection
+Make sure Python is installed.
 
-```text
-Fees
-↓
-Add Payment
-↓
-Select Student
-↓
-Enter Amount
-↓
-Select Payment Mode
-↓
-Save
+```bash
+python -m http.server 8090
 ```
 
-### End of Month
+### 4. Open in Browser
 
-Use:
+Visit:
 
 ```text
-Reports
-↓
-Attendance / Fees
+http://localhost:8090
 ```
 
-and export or print the required information.
+The public landing page is `index.html`, and the application dashboard is `dashboard.html`.
+
+### 5. Configure the Backend
+
+The cloud backend requires Cloudflare configuration.
+
+Refer to these project guides:
+
+- `DEPLOYMENT.md` – Backend and deployment instructions.
+- `FREE-HOSTING.md` – Cloudflare hosting setup.
+- `EMAIL-SETUP.md` – Email password-reset configuration.
+
+**Note:** Running the frontend locally does not automatically configure the Cloudflare backend. Complete the backend setup before using cloud-based features.
 
 ---
 
-# 🆓 21. Cost
+## ☁️ Cloud Deployment
 
-The project is designed to operate using free-tier services and does not require:
+The recommended deployment architecture is:
 
-* Paid hosting
-* Paid database
-* Monthly subscription
-* MongoDB
-* Render
-* Supabase
-* Firebase
+1. Push the source code to GitHub.
+2. Deploy the frontend using Cloudflare Pages.
+3. Configure the Cloudflare Worker.
+4. Create and configure the Cloudflare D1 database.
+5. Apply the required database migrations.
+6. Configure authentication and application secrets.
+7. Test login, student records, attendance, fees, and staff operations.
 
-Actual free-tier limits and provider policies can change over time, so production usage should remain within the applicable Cloudflare limits.
-
----
-
-# 🔮 22. Future Improvements
-
-Possible future features include:
-
-* Parent notifications
-* WhatsApp-ready payment reminders
-* More detailed late-arrival reports
-* Monthly attendance summaries
-* Fee reminders
-* Additional reporting
-* Custom domain
-* Additional staff accounts
-
-These can be added without changing the core purpose of the application.
+Refer to `DEPLOYMENT.md` for the complete setup procedure.
 
 ---
 
-# 👩‍💻 23. Project Purpose
+## 🔒 Data Privacy
 
-Tuition Manager was created to solve a simple real-world problem:
+Smart Academy follows an account-based data separation approach.
 
-> **Replacing paper-based tuition records with an easy-to-use digital system.**
-
-Instead of maintaining separate notebooks for:
-
-* Students
-* Attendance
-* Fees
-* Payments
-* Reports
-
-Tuition Manager brings these everyday tasks into one simple application.
-
-The cloud upgrade extends this idea by allowing the same account and data to be used across multiple devices.
+- Each account has its own records.
+- Backend authentication protects account-specific operations.
+- Users should only access their own academy information.
+- Private credentials should remain in backend environment settings.
+- Cloud synchronization requires an internet connection.
 
 ---
 
-# 📌 24. Repository
+## 🎯 Project Objective
 
-GitHub Repository:
+The main objective of Smart Academy System is to make tuition centre administration easier, faster, and more organized.
 
+Instead of maintaining separate notebooks and spreadsheets for students, attendance, fees, staff, and salaries, everything can be managed through one centralized digital platform.
+
+The project combines a simple user experience with cloud-based storage to support everyday academy operations.
+
+---
+
+## 🔮 Future Enhancements
+
+- Automated fee reminders.
+- WhatsApp notifications.
+- Parent communication portal.
+- Advanced attendance analytics.
+- More detailed financial reports.
+- Additional staff management options.
+- Improved backup and recovery features.
+
+---
+
+## 👩‍💻 Developer
+
+**Rickshitha A**
+
+B.Sc. Computer Science with Artificial Intelligence
+
+GitHub: [@Rickshitha2006](https://github.com/Rickshitha2006)
+
+**Project Repository:**  
 https://github.com/Rickshitha2006/tution-management-upgrade
 
 ---
 
-# 📄 License
+⭐ If you find this project useful, consider giving the repository a star!
 
-Free to use, modify and share for tuition management purposes.
-
----
-
-## ⭐ Tuition Manager
-
-**Simple. Digital. Cloud-synced. Built for everyday tuition management.**
+**Smart Academy System — Manage Smarter. Teach Better.**
