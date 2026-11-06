@@ -731,3 +731,11 @@ body.tm-rc-open { overflow: hidden; }
 .tm-rc-actions .btn { flex: 1 1 140px; }
 .tm-rc-confirm { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.92rem; margin-bottom: 14px; cursor: pointer; }
 .tm-rc-confirm input { width: 20px; height: 20px; flex: none; }
+
+/* ---------- Visiting staff: weekday chips + small badges ---------- */
+.tm-daychip{position:relative;margin:0;cursor:pointer}
+.tm-daychip input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.tm-daychip span{display:inline-block;min-width:48px;text-align:center;padding:7px 10px;border:1px solid var(--border,#d0d7e2);border-radius:999px;font-weight:600;font-size:.85rem;background:#fff;color:#334}
+.tm-daychip input:checked+span{background:var(--brand-600,#0f766e);border-color:var(--brand-600,#0f766e);color:#fff}
+.tm-daychip input:focus-visible+span{outline:2px solid var(--brand-600,#0f766e);outline-offset:2px}
+.tm-extra-head{margin:14px 0 6px;font-size:.8rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em}

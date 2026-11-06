@@ -5,7 +5,7 @@
    (e.g. https://username.github.io/tuition-manager/).
    ========================================================================== */
 
-const TM_CACHE_VERSION = "smart-academy-v15";
+const TM_CACHE_VERSION = "smart-academy-v16";
 
 // Resolve the scope this service worker was registered under.
 const TM_SCOPE = self.registration ? self.registration.scope : self.location.href;

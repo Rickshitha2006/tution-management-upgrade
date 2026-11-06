@@ -788,6 +788,26 @@ async function handleDeletePayment(request, env, user, id) {
 
 const STAFF_STATUSES = ["Present", "Half Day", "Absent", "Leave"];
 
+/** "2, 4,4,x,9" -> "2,4"  (only weekday numbers 0-6, sorted, no repeats). */
+function cleanVisitDays(v) {
+  const list = Array.isArray(v) ? v : String(v || "").split(",");
+  const days = [...new Set(list.map((x) => String(x).trim()).filter((x) => /^[0-6]$/.test(x)).map(Number))].sort();
+  return days.join(",");
+}
+
+/** Reads the visiting-staff fields from a request body, falling back to `base` (an existing row). Returns { error } if invalid. */
+function readVisitingFields(body, base) {
+  const b = base || {};
+  const payType = body.payType !== undefined ? body.payType : b.pay_type || "monthly";
+  if (payType !== "monthly" && payType !== "visiting") return { error: "Pay type must be monthly or visiting." };
+  const payModel = body.payModel !== undefined ? body.payModel : b.pay_model || "per_visit";
+  if (payModel !== "per_visit" && payModel !== "fixed") return { error: "Pay model must be per_visit or fixed." };
+  const visitDays = cleanVisitDays(body.visitDays !== undefined ? body.visitDays : b.visit_days);
+  const visitRate = body.visitRate !== undefined ? Math.max(0, num(body.visitRate)) : b.visit_rate || 0;
+  if (payType === "visiting" && !visitDays) return { error: "Choose at least one visit day for visiting staff." };
+  return { pay_type: payType, pay_model: payModel, visit_days: visitDays, visit_rate: visitRate };
+}
+
 function staffToApi(r) {
   return {
     id: r.id,
@@ -796,6 +816,10 @@ function staffToApi(r) {
     phone: r.phone || "",
     joiningDate: r.joining_date || "",
     monthlySalary: r.monthly_salary || 0,
+    payType: r.pay_type === "visiting" ? "visiting" : "monthly",
+    visitDays: cleanVisitDays(r.visit_days),
+    payModel: r.pay_model === "fixed" ? "fixed" : "per_visit",
+    visitRate: r.visit_rate || 0,
     notes: r.notes || "",
     active: !!r.active,
     createdAt: r.created_at,
@@ -818,6 +842,7 @@ function payrollToApi(r) {
     leaveDays: r.leave_days || 0,
     absentDays: r.absent_days || 0,
     holidayDays: r.holiday_days || 0,
+    payBasis: ["per_visit", "fixed_visits"].includes(r.pay_basis) ? r.pay_basis : "monthly",
     baseSalary: r.base_salary || 0,
     bonus: r.bonus || 0,
     deduction: r.deduction || 0,
@@ -854,11 +879,14 @@ async function handleGetStaff(request, env, user) {
 async function handlePostStaff(request, env, user) {
   const body = await readJson(request);
   if (!body.name || !String(body.name).trim()) return errorResponse("Staff name is required.");
+  const vf = readVisitingFields(body, null);
+  if (vf.error) return errorResponse(vf.error);
   const id = newId();
   const now = nowIso();
   await env.DB.prepare(
-    `INSERT INTO staff (id, user_id, name, role, phone, joining_date, monthly_salary, notes, active, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO staff (id, user_id, name, role, phone, joining_date, monthly_salary, notes, active, created_at, updated_at,
+                        pay_type, visit_days, pay_model, visit_rate)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   )
     .bind(
       id,
@@ -871,7 +899,11 @@ async function handlePostStaff(request, env, user) {
       body.notes || "",
       body.active === false ? 0 : 1,
       now,
-      now
+      now,
+      vf.pay_type,
+      vf.visit_days,
+      vf.pay_model,
+      vf.visit_rate
     )
     .run();
   const row = await env.DB.prepare(`SELECT * FROM staff WHERE id = ?`).bind(id).first();
@@ -882,6 +914,8 @@ async function handlePutStaff(request, env, user, id) {
   const existing = await getOwnedStaff(env, user.id, id);
   if (!existing) return errorResponse("Staff member not found.", 404);
   const body = await readJson(request);
+  const vf = readVisitingFields(body, existing);
+  if (vf.error) return errorResponse(vf.error);
   const m = {
     name: body.name !== undefined ? String(body.name).trim() || existing.name : existing.name,
     role: body.role !== undefined ? body.role : existing.role,
@@ -892,9 +926,11 @@ async function handlePutStaff(request, env, user, id) {
     active: body.active !== undefined ? (body.active ? 1 : 0) : existing.active,
   };
   await env.DB.prepare(
-    `UPDATE staff SET name=?, role=?, phone=?, joining_date=?, monthly_salary=?, notes=?, active=?, updated_at=? WHERE id=? AND user_id=?`
+    `UPDATE staff SET name=?, role=?, phone=?, joining_date=?, monthly_salary=?, notes=?, active=?, updated_at=?,
+                      pay_type=?, visit_days=?, pay_model=?, visit_rate=? WHERE id=? AND user_id=?`
   )
-    .bind(m.name, m.role, m.phone, m.joining_date, m.monthly_salary, m.notes, m.active, nowIso(), id, user.id)
+    .bind(m.name, m.role, m.phone, m.joining_date, m.monthly_salary, m.notes, m.active, nowIso(),
+          vf.pay_type, vf.visit_days, vf.pay_model, vf.visit_rate, id, user.id)
     .run();
   const row = await env.DB.prepare(`SELECT * FROM staff WHERE id = ?`).bind(id).first();
   return json(staffToApi(row));
@@ -992,9 +1028,10 @@ async function handlePutStaffPayroll(request, env, user) {
   const now = nowIso();
   await env.DB.prepare(
     `INSERT INTO staff_payroll (id, user_id, staff_id, month, working_days, present_days, half_days, leave_days, absent_days, holiday_days,
-                                base_salary, bonus, deduction, net_pay, status, paid_date, mode, notes, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                base_salary, bonus, deduction, net_pay, status, paid_date, mode, notes, created_at, updated_at, pay_basis)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(staff_id, month) DO UPDATE SET
+       pay_basis = excluded.pay_basis,
        working_days = excluded.working_days, present_days = excluded.present_days, half_days = excluded.half_days,
        leave_days = excluded.leave_days, absent_days = excluded.absent_days, holiday_days = excluded.holiday_days, base_salary = excluded.base_salary,
        bonus = excluded.bonus, deduction = excluded.deduction, net_pay = excluded.net_pay, status = excluded.status,
@@ -1020,7 +1057,8 @@ async function handlePutStaffPayroll(request, env, user) {
       status === "Paid" ? b.mode || "" : "",
       b.notes || "",
       now,
-      now
+      now,
+      ["per_visit", "fixed_visits"].includes(b.payBasis) ? b.payBasis : "monthly"
     )
     .run();
 
@@ -1257,10 +1295,13 @@ async function handleBulkRestore(request, env, user) {
     staff.forEach((m) => {
       statements.push(
         env.DB.prepare(
-          `INSERT INTO staff (id, user_id, name, role, phone, joining_date, monthly_salary, notes, active, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO staff (id, user_id, name, role, phone, joining_date, monthly_salary, notes, active, created_at, updated_at,
+                              pay_type, visit_days, pay_model, visit_rate)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(m.id || newId(), user.id, m.name || "Unnamed", m.role || "", m.phone || "", m.joiningDate || "",
-               Math.max(0, num(m.monthlySalary)), m.notes || "", m.active === false ? 0 : 1, m.createdAt || now, m.updatedAt || now)
+               Math.max(0, num(m.monthlySalary)), m.notes || "", m.active === false ? 0 : 1, m.createdAt || now, m.updatedAt || now,
+               m.payType === "visiting" && cleanVisitDays(m.visitDays) ? "visiting" : "monthly", cleanVisitDays(m.visitDays),
+               m.payModel === "fixed" ? "fixed" : "per_visit", Math.max(0, num(m.visitRate)))
       );
     });
     (Array.isArray(staffAttendance) ? staffAttendance : []).forEach((a) => {
@@ -1276,11 +1317,12 @@ async function handleBulkRestore(request, env, user) {
       statements.push(
         env.DB.prepare(
           `INSERT INTO staff_payroll (id, user_id, staff_id, month, working_days, present_days, half_days, leave_days, absent_days, holiday_days,
-                                      base_salary, bonus, deduction, net_pay, status, paid_date, mode, notes, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                                      base_salary, bonus, deduction, net_pay, status, paid_date, mode, notes, created_at, updated_at, pay_basis)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(p.id || newId(), user.id, p.staffId, p.month, num(p.workingDays), num(p.presentDays), num(p.halfDays),
                num(p.leaveDays), num(p.absentDays), num(p.holidayDays), num(p.baseSalary), num(p.bonus), num(p.deduction), num(p.netPay),
-               p.status === "Paid" ? "Paid" : "Pending", p.paidDate || "", p.mode || "", p.notes || "", p.createdAt || now, p.updatedAt || now)
+               p.status === "Paid" ? "Paid" : "Pending", p.paidDate || "", p.mode || "", p.notes || "", p.createdAt || now, p.updatedAt || now,
+               ["per_visit", "fixed_visits"].includes(p.payBasis) ? p.payBasis : "monthly")
       );
     });
   }
