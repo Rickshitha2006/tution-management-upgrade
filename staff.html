@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Staff — Smart Academy System</title>
+<meta name="theme-color" content="#2F2B93">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=15">
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+</head>
+<body class="tm-page-hd">
+
+<header class="tm-topbar">
+  <div class="d-flex align-items-center">
+    <a href="dashboard.html" class="tm-back" aria-label="Back to home">←</a>
+    <p class="page-title">Staff</p>
+  </div>
+</header>
+
+<main class="tm-container tm-has-savebar-lite">
+
+  <div class="tm-pagehead">
+    <div>
+      <h1>Staff</h1>
+      <p>Your team, daily attendance and the monthly salary sheet.</p>
+    </div>
+    <div class="tm-pagehead-actions"><a href="holidays.html" class="btn btn-tm-outline">Holiday calendar</a></div>
+  </div>
+
+  <ul class="nav nav-tabs mb-3" id="staffTabs">
+    <li class="nav-item"><button class="nav-link active" id="team-tab" data-bs-toggle="tab" data-bs-target="#teamPane" type="button">Team</button></li>
+    <li class="nav-item"><button class="nav-link" id="staffatt-tab" data-bs-toggle="tab" data-bs-target="#staffAttPane" type="button">Attendance</button></li>
+    <li class="nav-item"><button class="nav-link" id="staffhist-tab" data-bs-toggle="tab" data-bs-target="#staffHistPane" type="button">History</button></li>
+    <li class="nav-item"><button class="nav-link" id="salary-tab" data-bs-toggle="tab" data-bs-target="#salaryPane" type="button">Salary sheet</button></li>
+  </ul>
+
+  <div class="tab-content">
+
+    <!-- ===================== Team ===================== -->
+    <div class="tab-pane fade show active" id="teamPane">
+      <div class="tm-stat-grid mb-3">
+        <div class="tm-stat-tile"><div class="value" id="teamActiveCount">0</div><div class="label">Active staff</div></div>
+        <div class="tm-stat-tile"><div class="value" id="teamPayroll">₹0</div><div class="label">Monthly salary total</div></div>
+        <div class="tm-stat-tile"><div class="value" id="teamInactiveCount">0</div><div class="label">Inactive</div></div>
+      </div>
+      <div class="d-flex gap-2 mb-3 tm-controls-row">
+        <input type="search" id="staffSearchInput" class="form-control" placeholder="Search by name or role">
+        <button id="btnAddStaff" class="btn btn-tm-primary" style="flex:0 0 auto;">Add staff</button>
+      </div>
+      <div id="staffListContainer"></div>
+    </div>
+
+    <!-- ===================== Attendance ===================== -->
+    <div class="tab-pane fade" id="staffAttPane">
+      <div class="tm-daybar">
+        <div class="tm-daynav">
+          <button type="button" class="step" id="btnStaffDayPrev" aria-label="Previous day">‹</button>
+          <input type="date" id="staffAttDate" class="form-control" aria-label="Attendance date">
+          <button type="button" class="step" id="btnStaffDayNext" aria-label="Next day">›</button>
+          <button type="button" class="tm-linkbtn" id="btnStaffDayToday">Today</button>
+        </div>
+        <div class="tm-dayinfo" id="staffAttDateLabel"></div>
+        <div class="tm-pagehead-actions">
+          <button id="btnStaffAllPresent" class="btn btn-tm-outline">All present</button>
+          <button id="btnSaveStaffAtt" class="btn btn-tm-primary">Save attendance</button>
+        </div>
+      </div>
+
+      <div id="staffHolidayBanner" class="tm-banner d-none" role="status"></div>
+
+      <div class="tm-kpis">
+        <div class="tm-kpi"><div class="k-label">Active staff</div><div class="k-value" id="staffAttKpiTotal">0</div><div class="k-sub">On the team</div></div>
+        <div class="tm-kpi good"><div class="k-label">Present</div><div class="k-value" id="staffAttKpiPresent">0</div><div class="k-sub">Including half days</div></div>
+        <div class="tm-kpi bad"><div class="k-label">Absent or leave</div><div class="k-value" id="staffAttKpiAbsent">0</div><div class="k-sub" id="staffAttKpiUnmarked">0 not marked</div></div>
+        <div class="tm-kpi dark"><div class="k-label">Attendance rate</div><div class="k-value" id="staffAttKpiRate">0%</div><div class="tm-progress"><span id="staffAttRateBar"></span></div></div>
+      </div>
+
+      <div id="staffAttList" class="mb-3"></div>
+      <p class="tm-muted text-center" style="font-size:0.8rem;">Tap a selected status again to clear it. A half day counts as 0.5 day and paid leave counts as a full day in the salary sheet. Holidays are set in the <a href="holidays.html">holiday calendar</a>.</p>
+    </div>
+
+    <!-- ===================== History ===================== -->
+    <div class="tab-pane fade" id="staffHistPane">
+      <div class="tm-daybar">
+        <div class="tm-daynav">
+          <button type="button" class="step" id="btnHistPrev" aria-label="Previous month">‹</button>
+          <input type="month" id="histMonthInput" class="form-control" aria-label="Month">
+          <button type="button" class="step" id="btnHistNext" aria-label="Next month">›</button>
+          <button type="button" class="tm-linkbtn" id="btnHistThisMonth">This month</button>
+        </div>
+        <div class="tm-pagehead-actions">
+          <select id="histStaffSelect" class="form-select" aria-label="Staff member"></select>
+          <button id="btnHistExport" class="btn btn-tm-outline">Export Excel</button>
+        </div>
+      </div>
+
+      <div class="tm-kpis">
+        <div class="tm-kpi good"><div class="k-label">Present days</div><div class="k-value" id="histKpiPresent">0</div></div>
+        <div class="tm-kpi"><div class="k-label">Half days</div><div class="k-value" id="histKpiHalf">0</div></div>
+        <div class="tm-kpi"><div class="k-label">Paid leave</div><div class="k-value" id="histKpiLeave">0</div></div>
+        <div class="tm-kpi bad"><div class="k-label">Absent days</div><div class="k-value" id="histKpiAbsent">0</div></div>
+      </div>
+
+      <div class="tm-month-table-wrap"><div id="staffRegister"></div></div>
+      <div class="reg-legend mt-2" aria-hidden="true">
+        <span><b class="c-P">P</b> Present</span><span><b class="c-H">½</b> Half day</span><span><b class="c-L">L</b> Paid leave</span><span><b class="c-A">A</b> Absent</span><span><b class="c-HOL t-Festival">●</b> Holiday</span><span><b class="c-S">–</b> Sunday</span>
+      </div>
+    </div>
+
+    <!-- ===================== Salary ===================== -->
+    <div class="tab-pane fade" id="salaryPane">
+      <div class="tm-card">
+        <div class="tm-month-stepper">
+          <button type="button" id="btnSalaryPrev" aria-label="Previous month">‹</button>
+          <div class="label" id="salaryMonthLabel"></div>
+          <button type="button" id="btnSalaryNext" aria-label="Next month">›</button>
+        </div>
+      </div>
+
+      <div class="tm-stat-grid mb-3">
+        <div class="tm-stat-tile"><div class="value" id="salaryTotalNet">₹0</div><div class="label">Total payable</div></div>
+        <div class="tm-stat-tile"><div class="value" id="salaryTotalPaid">₹0</div><div class="label">Paid</div></div>
+        <div class="tm-stat-tile"><div class="value" id="salaryTotalPending">₹0</div><div class="label">Pending</div></div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-2 tm-action-row">
+        <span class="tm-muted" style="font-size:0.82rem;">Tap a row to review, adjust and pay.</span>
+        <button id="btnExportSalary" class="btn btn-tm-outline btn-sm">Download salary sheet</button>
+      </div>
+      <div class="tm-month-table-wrap" id="salaryTableWrap"></div>
+      <p class="tm-muted mt-2" style="font-size:0.78rem;">Pending amounts follow the attendance you mark and the holiday calendar. Once a month is marked as paid, its figures are locked.</p>
+    </div>
+  </div>
+</main>
+
+<!-- Add / edit staff -->
+<div class="modal fade" id="staffModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <form id="staffForm" novalidate>
+        <div class="modal-header">
+          <h5 class="modal-title" id="staffModalTitle">Add staff</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="staffName">Full name</label>
+            <input type="text" id="staffName" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="staffRole">Role or subject <span class="tm-muted fw-normal">(optional)</span></label>
+            <input type="text" id="staffRole" class="form-control" placeholder="e.g. Maths teacher">
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label" for="staffPhone">Phone <span class="tm-muted fw-normal">(optional)</span></label>
+              <input type="tel" id="staffPhone" class="form-control">
+            </div>
+            <div class="col-6">
+              <label class="form-label" for="staffJoining">Joining date</label>
+              <input type="date" id="staffJoining" class="form-control">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="staffSalary">Monthly salary (₹)</label>
+            <input type="number" id="staffSalary" class="form-control" min="0" step="1" inputmode="numeric" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="staffNotes">Notes <span class="tm-muted fw-normal">(optional)</span></label>
+            <textarea id="staffNotes" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="staffActive" checked>
+            <label class="form-check-label" for="staffActive">Active staff member</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="btnDeleteStaff" class="btn btn-tm-danger me-auto d-none">Delete</button>
+          <button type="button" class="btn btn-tm-outline" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-tm-primary">Save staff</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Salary detail -->
+<div class="modal fade" id="salaryModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-0" id="salaryModalTitle">Salary</h5>
+          <div class="tm-muted" style="font-size:0.8rem;" id="salaryModalSub"></div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="tm-stat-grid mb-3" id="salaryAttSummary" style="grid-template-columns: repeat(5, minmax(0,1fr));"></div>
+        <div id="salaryLockedNote" class="alert alert-success py-2 d-none" style="font-size:0.85rem;">This month is marked as paid, so its figures are locked. Mark it as pending to edit.</div>
+
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="form-label" for="salWorkingDays">Working days</label>
+            <input type="number" id="salWorkingDays" class="form-control" min="1" max="31" step="0.5" inputmode="decimal">
+          </div>
+          <div class="col-6">
+            <label class="form-label" for="salBase">Monthly salary (₹)</label>
+            <input type="number" id="salBase" class="form-control" min="0" step="1" inputmode="numeric">
+          </div>
+          <div class="col-6">
+            <label class="form-label" for="salBonus">Bonus (₹)</label>
+            <input type="number" id="salBonus" class="form-control" min="0" step="1" inputmode="numeric">
+          </div>
+          <div class="col-6">
+            <label class="form-label" for="salDeduction">Advance / deduction (₹)</label>
+            <input type="number" id="salDeduction" class="form-control" min="0" step="1" inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="tm-card mb-3" style="background:var(--brand-50);">
+          <div class="d-flex justify-content-between"><span class="tm-muted">Paid days</span><strong id="salPaidDays">0</strong></div>
+          <div class="d-flex justify-content-between"><span class="tm-muted">Earned for attendance</span><span class="tm-amount" id="salEarned">₹0</span></div>
+          <div class="tm-divider"></div>
+          <div class="d-flex justify-content-between align-items-center"><strong>Net pay</strong><span class="tm-amount" style="font-size:1.25rem;color:var(--brand-700);" id="salNet">₹0</span></div>
+        </div>
+
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="form-label" for="salPaidDate">Paid on</label>
+            <input type="date" id="salPaidDate" class="form-control">
+          </div>
+          <div class="col-6">
+            <label class="form-label" for="salMode">Mode</label>
+            <select id="salMode" class="form-select">
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="Bank transfer">Bank transfer</option>
+              <option value="Cheque">Cheque</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="form-label" for="salNotes">Notes <span class="tm-muted fw-normal">(optional)</span></label>
+          <textarea id="salNotes" class="form-control" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnSalaryPayslip" class="btn btn-tm-outline me-auto">Payslip PDF</button>
+        <button type="button" id="btnSalarySave" class="btn btn-tm-outline">Save</button>
+        <button type="button" id="btnSalaryTogglePaid" class="btn btn-tm-primary">Mark as paid</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="tm-bottom-nav" id="tmBottomNav"></nav>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/config.js?v=15"></script>
+<script src="js/db.js?v=15"></script>
+<script src="js/utils.js?v=15"></script>
+<script src="js/app.js?v=15"></script>
+<script src="js/pdf-reports.js?v=15"></script>
+<script src="js/staff.js?v=15"></script>
+<script>
+  tmRegisterServiceWorker();
+  tmRegisterOfflineSync();
+  document.addEventListener("DOMContentLoaded", () => {
+    tmInitStaffPage();
+  });
+</script>
+</body>
+</html>

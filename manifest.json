@@ -1,0 +1,25 @@
+{
+  "name": "Smart Academy System",
+  "short_name": "Smart Academy",
+  "description": "Smart Academy System — students, staff, attendance, fees, salary and reports for your academy.",
+  "start_url": "./dashboard.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F1F5F5",
+  "theme_color": "#2F2B93",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

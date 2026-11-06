@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Log In — Smart Academy System</title>
+<meta name="theme-color" content="#2F2B93">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=15">
+</head>
+<body>
+
+<div class="tm-auth">
+  <aside class="tm-auth-brand">
+    <a href="index.html" class="tm-auth-logo" style="color:#fff;text-decoration:none;"><span class="tm-logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 9 10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/></svg></span><span>Smart Academy</span></a>
+    <h2 class="tm-auth-headline">Run your academy with clarity.</h2>
+    <p class="tm-auth-lead">Students, staff, attendance, fees and salaries in one secure place, on any device.</p>
+    <ul class="tm-auth-points">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Daily attendance for students and staff</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Fee tracking, receipts and reminders</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Monthly salary sheet and payslips</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Your data stays private to your account</li>
+    </ul>
+  </aside>
+  <div class="tm-auth-panel">
+  <div class="tm-setup-card">
+    <a href="index.html" class="d-inline-block mb-3 tm-muted" style="font-size:.85rem;">← Back to website</a>
+    <div class="text-center mb-3">
+      <span class="tm-logo-mark d-lg-none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 9 10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/></svg></span>
+      <h1 class="h4 mt-2 mb-1" id="authTitle">Welcome back</h1>
+      <p class="tm-muted mb-0" id="authSubtitle">Log in to manage students, staff, attendance and fees from any device.</p>
+    </div>
+
+    <form id="authForm" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="authEmail">Email</label>
+        <input type="email" class="form-control" id="authEmail" placeholder="you@example.com" required autocomplete="username">
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="authPassword">Password</label>
+        <input type="password" class="form-control" id="authPassword" placeholder="Enter your password" required minlength="6" autocomplete="current-password">
+        <div class="text-end mt-1" id="forgotWrap"><a href="#" id="forgotLink" style="font-size:.85rem;">Forgot password?</a></div>
+      </div>
+      <div class="mb-4 d-none" id="authConfirmWrap">
+        <label class="form-label" for="authPasswordConfirm">Confirm Password</label>
+        <input type="password" class="form-control" id="authPasswordConfirm" placeholder="Re-enter your password" minlength="6" autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn btn-tm-primary btn-lg-tap w-100" id="authSubmitBtn">Log In</button>
+    </form>
+
+
+    <form id="recoverForm" class="d-none" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="recoverEmail">Email</label>
+        <input type="email" class="form-control" id="recoverEmail" placeholder="you@example.com" required autocomplete="username">
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="recoverCode">Recovery code</label>
+        <input type="text" class="form-control" id="recoverCode" placeholder="XXXX-XXXX-XXXX-XXXX" required autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.05em;">
+        <div class="tm-muted mt-1" style="font-size:.8rem;">The code you saved when you created your account. Capital or small letters both work.</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="recoverPw">New password</label>
+        <input type="password" class="form-control" id="recoverPw" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password">
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="recoverPw2">Confirm new password</label>
+        <input type="password" class="form-control" id="recoverPw2" placeholder="Re-enter the new password" required minlength="6" autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn btn-tm-primary btn-lg-tap w-100" id="recoverBtn">Reset password</button>
+      <p class="tm-muted text-center mt-3 mb-1" style="font-size:.8rem;">Lost your recovery code? Without it an account cannot be recovered. Accounts made before this update can create a code in <strong>Settings</strong> while logged in.</p>
+      <p class="text-center mb-1 d-none" id="useEmailWrap" style="font-size:0.9rem;"><a href="#" id="useEmailLink">Email me a reset link instead</a></p>
+      <p class="text-center mt-2 mb-0" style="font-size:0.9rem;"><a href="#" class="forgotBack">← Back to log in</a></p>
+    </form>
+
+    <form id="forgotForm" class="d-none" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="forgotEmail">Email</label>
+        <input type="email" class="form-control" id="forgotEmail" placeholder="you@example.com" required autocomplete="email">
+      </div>
+      <button type="submit" class="btn btn-tm-primary btn-lg-tap w-100" id="forgotBtn">Send reset link</button>
+      <p class="text-center mt-3 mb-0" style="font-size:0.9rem;"><a href="#" id="useCodeLink">Use my recovery code instead</a></p>
+      <p class="text-center mt-3 mb-0" style="font-size:0.9rem;"><a href="#" class="forgotBack">← Back to log in</a></p>
+    </form>
+
+    <div id="forgotDone" class="d-none text-center">
+      <p class="mb-2"><strong>Check your email</strong></p>
+      <p class="tm-muted" id="forgotDoneText" style="font-size:.92rem;"></p>
+      <p class="tm-muted" style="font-size:.82rem;">The link works for 30 minutes. If you can't see it, check your spam folder.</p>
+      <p class="mt-3 mb-0" style="font-size:0.9rem;"><a href="#" class="forgotBack">← Back to log in</a></p>
+    </div>
+
+    <p class="text-center mt-3 mb-0" style="font-size:0.9rem;" id="authToggleRow">
+      <span id="authToggleText">Don't have an account?</span>
+      <a href="#" id="authToggleLink">Create one</a>
+    </p>
+
+    <p class="tm-muted text-center mt-3 mb-0" style="font-size:0.8rem;">
+      Your academy's data is stored in your own private account and is never shared with other users.
+    </p>
+  </div>
+  </div>
+</div>
+
+<script src="js/config.js?v=15"></script>
+<script src="js/db.js?v=15"></script>
+<script src="js/utils.js?v=15"></script>
+<script src="js/recovery.js?v=15"></script>
+<script>
+  function tmBasePath() {
+    const path = window.location.pathname;
+    return path.substring(0, path.lastIndexOf("/") + 1);
+  }
+
+  let tmAuthMode = "login"; // "login" | "register"
+
+  function tmApplyAuthMode() {
+    const isRegister = tmAuthMode === "register";
+    document.getElementById("authTitle").textContent = isRegister ? "Create your account" : "Welcome back";
+    document.getElementById("authSubtitle").textContent = isRegister
+      ? "One account, synced across every device you use."
+      : "Log in to manage students, staff, attendance and fees from any device.";
+    document.getElementById("authConfirmWrap").classList.toggle("d-none", !isRegister);
+    document.getElementById("forgotWrap").classList.toggle("d-none", isRegister);
+    document.getElementById("authPasswordConfirm").required = isRegister;
+    document.getElementById("authSubmitBtn").textContent = isRegister ? "Create Account" : "Log In";
+    document.getElementById("authToggleText").textContent = isRegister ? "Already have an account?" : "Don't have an account?";
+    document.getElementById("authToggleLink").textContent = isRegister ? "Log in" : "Create one";
+  }
+
+  document.getElementById("authToggleLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    tmAuthMode = tmAuthMode === "login" ? "register" : "login";
+    tmApplyAuthMode();
+  });
+
+  function tmNextPage() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("next") || "dashboard.html";
+  }
+
+  document.getElementById("authForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("authEmail").value.trim();
+    const password = document.getElementById("authPassword").value;
+    const submitBtn = document.getElementById("authSubmitBtn");
+
+    if (tmAuthMode === "register") {
+      const confirmPw = document.getElementById("authPasswordConfirm").value;
+      if (password !== confirmPw) {
+        tmToast("Passwords do not match.");
+        return;
+      }
+    }
+
+    submitBtn.disabled = true;
+    const originalLabel = submitBtn.textContent;
+    submitBtn.textContent = "Please wait…";
+
+    try {
+      if (tmAuthMode === "register") {
+        const created = await TMAuth.register(email, password);
+        if (created.recoveryCode) {
+          await tmShowRecoveryCode({
+            code: created.recoveryCode,
+            email,
+            heading: "Your account is ready — save your recovery code",
+            intro: "This is the only way to get back in if you ever forget your password.",
+            buttonLabel: "Continue to my account",
+          });
+        }
+      } else {
+        await TMAuth.login(email, password);
+      }
+      if (typeof tmCheckAndOfferMigration === "function") {
+        await tmCheckAndOfferMigration();
+      }
+      window.location.href = tmBasePath() + tmNextPage();
+    } catch (err) {
+      tmToast(err.message || "Something went wrong. Please try again.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
+    }
+  });
+
+  // ---- Forgot password ----
+  function tmShowForgot(show) {
+    const isRegister = tmAuthMode === "register";
+    document.getElementById("authForm").classList.toggle("d-none", show);
+    document.getElementById("authToggleRow").classList.toggle("d-none", show);
+    document.getElementById("forgotForm").classList.add("d-none");
+    document.getElementById("recoverForm").classList.toggle("d-none", !show);
+    document.getElementById("forgotDone").classList.add("d-none");
+    if (show) {
+      document.getElementById("authTitle").textContent = "Reset your password";
+      document.getElementById("authSubtitle").textContent = "Enter your email, the recovery code you saved when you created your account, and choose a new password.";
+      document.getElementById("recoverEmail").value = document.getElementById("authEmail").value;
+      document.getElementById("recoverEmail").focus();
+      // Only offer the email option if the server has email set up.
+      TMAuth.authOptions().then((o) => document.getElementById("useEmailWrap").classList.toggle("d-none", !(o && o.emailReset)));
+    } else {
+      tmApplyAuthMode();
+    }
+  }
+  document.getElementById("useEmailLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    document.getElementById("recoverForm").classList.add("d-none");
+    document.getElementById("forgotForm").classList.remove("d-none");
+    document.getElementById("authSubtitle").textContent = "Enter the email you signed up with and we will send you a link to choose a new password.";
+    document.getElementById("forgotEmail").value = document.getElementById("recoverEmail").value;
+  });
+  document.getElementById("useCodeLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    document.getElementById("forgotForm").classList.add("d-none");
+    document.getElementById("recoverForm").classList.remove("d-none");
+    document.getElementById("authSubtitle").textContent = "Enter your email, the recovery code you saved when you created your account, and choose a new password.";
+  });
+  document.getElementById("recoverForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("recoverEmail").value.trim();
+    const code = document.getElementById("recoverCode").value.trim();
+    const pw = document.getElementById("recoverPw").value;
+    const pw2 = document.getElementById("recoverPw2").value;
+    const btn = document.getElementById("recoverBtn");
+    if (!email || !code || !pw) return tmToast("Please fill in every box.");
+    if (pw.length < 6) return tmToast("Password must be at least 6 characters.");
+    if (pw !== pw2) return tmToast("Passwords do not match.");
+    btn.disabled = true;
+    const label = btn.textContent;
+    btn.textContent = "Please wait…";
+    try {
+      const res = await TMAuth.recoverWithCode(email, code, pw);
+      await tmShowRecoveryCode({
+        code: res.recoveryCode,
+        email,
+        heading: "Password changed — save your NEW recovery code",
+        intro: "Your old recovery code no longer works. Keep this new one safe; you will need it if you forget your password again.",
+        buttonLabel: "Go to log in",
+      });
+      ["recoverCode", "recoverPw", "recoverPw2"].forEach((id) => { document.getElementById(id).value = ""; });
+      document.getElementById("authEmail").value = email;
+      document.getElementById("authPassword").value = "";
+      tmShowForgot(false);
+      tmToast("Password changed. You can log in now.", 4000);
+    } catch (err) {
+      tmToast(err.message || "Could not reset the password. Please try again.", 4500);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = label;
+    }
+  });
+  document.getElementById("forgotLink").addEventListener("click", (e) => { e.preventDefault(); tmShowForgot(true); });
+  document.querySelectorAll(".forgotBack").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); tmShowForgot(false); }));
+  document.getElementById("forgotForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("forgotEmail").value.trim();
+    const btn = document.getElementById("forgotBtn");
+    if (!email) return tmToast("Enter your email address.");
+    btn.disabled = true;
+    const label = btn.textContent;
+    btn.textContent = "Sending…";
+    try {
+      await tmApiFetch("/api/auth/forgot", { method: "POST", body: { email }, skipAuth: true });
+      document.getElementById("forgotForm").classList.add("d-none");
+      document.getElementById("forgotDoneText").textContent = "If an account exists for " + email + ", we have sent a password reset link to it.";
+      document.getElementById("forgotDone").classList.remove("d-none");
+      document.getElementById("authTitle").textContent = "Reset link sent";
+      document.getElementById("authSubtitle").textContent = "";
+    } catch (err) {
+      tmToast(err.message || "Could not send the email. Please try again.", 4000);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = label;
+    }
+  });
+
+  // Already logged in? Skip straight through.
+  if (TMAuth.isLoggedIn()) {
+    window.location.href = tmBasePath() + tmNextPage();
+  }
+</script>
+<script src="js/legacy-local-db.js?v=15"></script>
+<script src="js/migrate.js?v=15"></script>
+</body>
+</html>

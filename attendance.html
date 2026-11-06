@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Attendance — Smart Academy System</title>
+<meta name="theme-color" content="#2F2B93">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=15">
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+</head>
+<body class="tm-page-hd">
+
+<header class="tm-topbar">
+  <div class="d-flex align-items-center">
+    <a href="dashboard.html" class="tm-back">←</a>
+    <p class="page-title">Attendance</p>
+  </div>
+</header>
+
+<div id="offlineQueueBanner" class="d-none" style="background:#fff8e1; color:#8a6d00; font-size:0.82rem; padding:8px 16px; text-align:center;"></div>
+
+<main class="tm-container tm-has-savebar">
+
+  <div class="tm-pagehead">
+    <div>
+      <h1>Attendance</h1>
+      <p>Mark each day’s attendance and review any student’s history.</p>
+    </div>
+    <div class="tm-pagehead-actions"><a href="holidays.html" class="btn btn-tm-outline">Holiday calendar</a></div>
+  </div>
+
+  <ul class="nav nav-tabs mb-3" id="attendanceTabs">
+    <li class="nav-item"><button class="nav-link active" id="mark-tab" data-bs-toggle="tab" data-bs-target="#markPane" type="button">Mark attendance</button></li>
+    <li class="nav-item"><button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#historyPane" type="button">History</button></li>
+  </ul>
+
+  <div class="tab-content">
+
+    <!-- Mark attendance -->
+    <div class="tab-pane fade show active" id="markPane">
+      <div class="tm-daybar">
+        <div class="tm-daynav">
+          <button type="button" class="step" id="btnDayPrev" aria-label="Previous day">‹</button>
+          <input type="date" id="attendanceDate" class="form-control" aria-label="Attendance date">
+          <button type="button" class="step" id="btnDayNext" aria-label="Next day">›</button>
+          <button type="button" class="tm-linkbtn" id="btnDayToday">Today</button>
+        </div>
+        <div class="tm-dayinfo" id="attendanceDateLabel"></div>
+        <div class="tm-pagehead-actions">
+          <button id="btnMarkAllPresent" class="btn btn-tm-outline">Mark all present</button>
+          <button id="btnSaveAttendanceTop" class="btn btn-tm-primary" data-save-att>Save attendance</button>
+        </div>
+      </div>
+
+      <div id="attHolidayBanner" class="tm-banner d-none" role="status"></div>
+
+      <div class="tm-kpis">
+        <div class="tm-kpi"><div class="k-label">Students</div><div class="k-value" id="attKpiTotal">0</div><div class="k-sub">Active on roll</div></div>
+        <div class="tm-kpi good"><div class="k-label">Present</div><div class="k-value" id="attKpiPresent">0</div><div class="k-sub">Marked present</div></div>
+        <div class="tm-kpi bad"><div class="k-label">Absent</div><div class="k-value" id="attKpiAbsent">0</div><div class="k-sub" id="attKpiUnmarked">0 not marked</div></div>
+        <div class="tm-kpi dark"><div class="k-label">Attendance rate</div><div class="k-value" id="attKpiRate">0%</div><div class="tm-progress"><span id="attRateBar"></span></div></div>
+      </div>
+
+      <div class="tm-toolbar">
+        <div class="tm-search-box"><input type="search" id="attSearch" class="form-control" placeholder="Search student" aria-label="Search student"><span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4-4"/></svg></span></div>
+        <div class="tm-filters" id="attFilters" role="group" aria-label="Filter by status">
+          <button type="button" class="tm-filter active" data-filter="all">All<span class="n" id="attCountAll">0</span></button>
+          <button type="button" class="tm-filter" data-filter="Present">Present<span class="n" id="attCountPresent">0</span></button>
+          <button type="button" class="tm-filter" data-filter="Absent">Absent<span class="n" id="attCountAbsent">0</span></button>
+          <button type="button" class="tm-filter" data-filter="Unmarked">Not marked<span class="n" id="attCountUnmarked">0</span></button>
+        </div>
+      </div>
+
+      <div id="attendanceMarkList"></div>
+    </div>
+
+    <!-- History -->
+    <div class="tab-pane fade" id="historyPane">
+      <div class="tm-toolbar">
+        <select id="historyStudentSelect" class="form-select" aria-label="Student"></select>
+        <select id="historyRangeSelect" class="form-select" aria-label="Date range">
+          <option value="all">All time</option>
+          <option value="today">Today</option>
+          <option value="week">This week</option>
+          <option value="month" selected>This month</option>
+          <option value="custom">Custom date range</option>
+        </select>
+        <button id="btnExportAttendanceCsv" class="btn btn-tm-outline ms-auto">Export Excel</button>
+      </div>
+      <div id="historyCustomWrap" class="tm-toolbar d-none">
+        <div class="d-flex align-items-center gap-2"><label class="form-label mb-0" for="historyCustomStart">From</label><input type="date" id="historyCustomStart" class="form-control"></div>
+        <div class="d-flex align-items-center gap-2"><label class="form-label mb-0" for="historyCustomEnd">To</label><input type="date" id="historyCustomEnd" class="form-control"></div>
+      </div>
+
+      <div class="tm-kpis">
+        <div class="tm-kpi"><div class="k-label">Class days</div><div class="k-value" id="historyStatTotal">0</div><div class="k-sub" id="historyStatSub">Days attendance was taken</div></div>
+        <div class="tm-kpi good"><div class="k-label">Present</div><div class="k-value" id="historyStatPresent">0</div></div>
+        <div class="tm-kpi bad"><div class="k-label">Absent</div><div class="k-value" id="historyStatAbsent">0</div></div>
+        <div class="tm-kpi dark"><div class="k-label">Attendance rate</div><div class="k-value" id="historyStatPct">0%</div><div class="tm-progress"><span id="histRateBar"></span></div></div>
+      </div>
+
+      <div id="attendanceHistoryList"></div>
+    </div>
+
+  </div>
+</main>
+
+<div class="tm-savebar" id="attSaveBar" role="region" aria-live="polite" aria-label="Unsaved attendance changes">
+  <div class="tm-savebar-in">
+    <div class="txt"><span id="attDirtyText">0 unsaved changes</span><small id="attDirtyDate"></small></div>
+    <div class="btns">
+      <button type="button" id="btnDiscardAtt" class="btn btn-tm-outline">Discard</button>
+      <button type="button" id="btnSaveAttendance" class="btn btn-tm-primary" data-save-att>Save attendance</button>
+    </div>
+  </div>
+</div>
+
+<nav class="tm-bottom-nav" id="tmBottomNav"></nav>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/config.js?v=15"></script>
+<script src="js/db.js?v=15"></script>
+<script src="js/utils.js?v=15"></script>
+<script src="js/app.js?v=15"></script>
+<script src="js/attendance.js?v=15"></script>
+<script>
+  tmRegisterServiceWorker();
+  tmRegisterOfflineSync();
+  document.addEventListener("DOMContentLoaded", () => {
+    tmInitAttendancePage();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+name = "tuition-manager-api"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# Free tier: Workers + D1 both have generous free monthly limits, no
+# credit card required for the tier this project needs.
+
+[[d1_databases]]
+binding = "DB"                       # accessed in code as env.DB
+database_name = "tuition-manager-db"
+database_id = "b607d3a8-3975-426b-b522-2a6aae485eb6"   # `wrangler d1 create tuition-manager-db` prints this
+
+# No secrets are needed for this project (passwords are hashed with
+# Web Crypto/PBKDF2, sessions are random tokens stored in D1 — nothing
+# to put in `wrangler secret put`). If you add one later, never commit
+# it here; use `wrangler secret put NAME` instead.
+
+# ---- Password-reset email (optional but recommended) -------------------------
+# 1. Create a free Brevo account (300 emails/day free) and verify a sender address.
+# 2. Put your website address and that verified sender below, then run `wrangler deploy`.
+# 3. Store the Brevo API key as a SECRET (never put it in this file):
+#      wrangler secret put BREVO_API_KEY
+[vars]
+APP_URL = ""            # e.g. "https://your-academy.pages.dev"  (no trailing slash)
+MAIL_FROM_EMAIL = ""    # the sender address you verified in Brevo
+MAIL_FROM_NAME = "Smart Academy System"
